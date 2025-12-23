@@ -16,6 +16,7 @@
     "outDir": "./dist",
     "rootDir": ".",
     "baseUrl": ".",
+    "composite": true,
     "paths": {
       "@server/*": ["./server/*"]
     }
