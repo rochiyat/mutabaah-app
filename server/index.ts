@@ -7,6 +7,7 @@ import authRoutes from './routes/auth';
 import activityRoutes from './routes/activities';
 import recordRoutes from './routes/records';
 import statsRoutes from './routes/stats';
+import groupRoutes from './routes/groups';
 import { errorHandler } from './middleware/errorHandler';
 
 dotenv.config();
@@ -25,6 +26,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/records', recordRoutes);
 app.use('/api/stats', statsRoutes);
+app.use('/api/groups', groupRoutes);
 
 // Serve static files from dist
 app.use(express.static(path.join(__dirname, '../dist')));

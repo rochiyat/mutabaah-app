@@ -2,8 +2,23 @@ export interface User {
   id: number;
   email: string;
   name: string;
+  role: string;
+  groupId?: number | null;
+  isActive: boolean;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface Group {
+  id: number;
+  name: string;
+  description?: string;
+  adminId: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  admin?: User;
+  members?: User[];
 }
 
 export interface Activity {
@@ -13,9 +28,19 @@ export interface Activity {
   target: number;
   unit: string;
   isActive: boolean;
-  userId: number;
+  userId?: number | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface GroupActivity {
+  id: number;
+  groupId: number;
+  activityId: number;
+  isRequired: boolean;
+  createdAt: string;
+  updatedAt: string;
+  activity?: Activity;
 }
 
 export interface ActivityRecord {

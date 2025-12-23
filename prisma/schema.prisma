@@ -12,11 +12,35 @@ model User {
   email     String   @unique
   name      String
   password  String
+  role      String   @default("user")
+  groupId   Int?
+  isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  activities Activity[]
-  records    Record[]
+  group           Group?           @relation("GroupMembers", fields: [groupId], references: [id], onDelete: SetNull)
+  adminGroups     Group[]          @relation("GroupAdmin")
+  activities      Activity[]
+  records         Record[]
+  
+  @@index([groupId])
+  @@index([role])
+}
+
+model Group {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  adminId     Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  admin       User              @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  members     User[]            @relation("GroupMembers")
+  activities  GroupActivity[]
+  
+  @@index([adminId])
 }
 
 model Activity {
@@ -26,14 +50,31 @@ model Activity {
   target      Int      @default(1)
   unit        String   @default("kali")
   isActive    Boolean  @default(true)
-  userId      Int
+  userId      Int?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  groupActivities GroupActivity[]
   records     Record[]
   
   @@index([userId])
+}
+
+model GroupActivity {
+  id          Int      @id @default(autoincrement())
+  groupId     Int
+  activityId  Int
+  isRequired  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  
+  @@unique([groupId, activityId])
+  @@index([groupId])
+  @@index([activityId])
 }
 
 model Record {
