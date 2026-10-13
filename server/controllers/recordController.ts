@@ -1,6 +1,8 @@
 import { Request, Response } from 'express'
 import { prisma } from '../utils/prisma'
 import { CreateRecordDTO, UpdateRecordDTO } from '../types'
+import { canRecordActivity } from '../utils/activityAccess'
+import { dateKeyToDb, isDateKey, localDateKey } from '../utils/date'
 
 export const getRecords = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -19,11 +21,11 @@ export const getRecords = async (req: Request, res: Response): Promise<void> => 
     
     if (startDate || endDate) {
       whereClause.date = {}
-      if (startDate) {
-        whereClause.date.gte = new Date(startDate as string)
+      if (isDateKey(startDate)) {
+        whereClause.date.gte = dateKeyToDb(startDate)
       }
-      if (endDate) {
-        whereClause.date.lte = new Date(endDate as string)
+      if (isDateKey(endDate)) {
+        whereClause.date.lte = dateKeyToDb(endDate)
       }
     }
 
@@ -48,8 +50,17 @@ export const createRecord = async (req: Request, res: Response): Promise<void> =
 
     const { activityId, completed, notes, date } = req.body as CreateRecordDTO
 
-    const activity = await prisma.activity.findUnique({ where: { id: activityId } })
-    if (!activity || activity.userId !== req.user.userId) {
+    if (date !== undefined && !isDateKey(date)) {
+      res.status(400).json({ message: 'Format tanggal harus yyyy-MM-dd' })
+      return
+    }
+
+    if (!Number.isInteger(completed) || completed < 0) {
+      res.status(400).json({ message: 'Jumlah harus bilangan bulat >= 0' })
+      return
+    }
+
+    if (!(await canRecordActivity(req.user.userId, activityId))) {
       res.status(404).json({ message: 'Aktivitas tidak ditemukan' })
       return
     }
@@ -59,7 +70,7 @@ export const createRecord = async (req: Request, res: Response): Promise<void> =
         activityId,
         completed,
         notes,
-        date: date ? new Date(date) : new Date(),
+        date: dateKeyToDb(date ?? localDateKey()),
         userId: req.user.userId
       },
       include: { activity: true }
@@ -84,6 +95,11 @@ export const updateRecord = async (req: Request, res: Response): Promise<void> =
 
     const { id } = req.params
     const { completed, notes } = req.body as UpdateRecordDTO
+
+    if (completed !== undefined && (!Number.isInteger(completed) || completed < 0)) {
+      res.status(400).json({ message: 'Jumlah harus bilangan bulat >= 0' })
+      return
+    }
 
     const record = await prisma.record.findUnique({ where: { id: parseInt(id) } })
     if (!record || record.userId !== req.user.userId) {

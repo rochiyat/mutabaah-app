@@ -55,12 +55,10 @@ npm install
 cp .env.example .env
 ```
 
-Update `.env` with your configuration:
-```env
-DATABASE_URL="mysql://user:password@host:port/database"
-JWT_SECRET="your-super-secret-jwt-key"
-NODE_ENV="development"
-PORT=3000
+Update `.env` with your configuration (see `.env.example`). `JWT_SECRET` is required; the server
+refuses to start without it, and refuses to start in production with a placeholder or short secret:
+```bash
+node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
 ```
 
 4. Run database migrations:
@@ -72,6 +70,22 @@ npm run prisma:migrate
 ```bash
 npm run prisma:generate
 ```
+
+6. Create the first superadmin (set `SEED_SUPERADMIN_PASSWORD` in `.env` first):
+```bash
+npm run prisma:seed
+```
+
+## Roles
+
+| Role | Access |
+|------|--------|
+| `superadmin` | Everything, including granting/revoking `superadmin` |
+| `admin` | Manage all users (except superadmins) and all groups |
+| `murabbi` | Create groups and manage the groups they lead |
+| `user` | Personal activities plus the activities of the group they belong to |
+
+Role and active status are read from the database on every request, so changes apply immediately.
 
 ## Development
 
@@ -125,22 +139,35 @@ mutabaah-app/
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
-- `POST /api/auth/logout` - Logout user
+- `GET /api/auth/me` - Current user
 
 ### Activities
 - `GET /api/activities` - Get user's activities
 - `POST /api/activities` - Create new activity
-- `PUT /api/activities/:id` - Update activity
+- `PATCH /api/activities/:id` - Update activity
 - `DELETE /api/activities/:id` - Delete activity
 
 ### Records
 - `GET /api/records` - Get activity records
 - `POST /api/records` - Create new record
-- `PUT /api/records/:id` - Update record
+- `PATCH /api/records/:id` - Update record
 - `DELETE /api/records/:id` - Delete record
 
 ### Statistics
-- `GET /api/stats` - Get activity statistics
+- `GET /api/stats/dashboard` - Today's progress, streak, activity count
+- `GET /api/stats/weekly` - Per-activity data for the current week (Monday start)
+- `GET /api/stats/monthly` - Per-activity totals for the current month, target counted up to today
+
+### Groups
+- `GET|POST /api/groups`, `GET|PATCH|DELETE /api/groups/:id`
+- `GET|POST /api/groups/:groupId/members`, `DELETE /api/groups/:groupId/members/:userId`
+- `GET|POST /api/groups/:groupId/activities` - POST takes `{ activityId }` or `{ name, category, target, unit }` for a new group activity
+- `PATCH|DELETE /api/groups/:groupId/activities/:activityId`
+
+### Users (superadmin/admin; murabbi can list)
+- `GET /api/users?search=` - List users
+- `PATCH /api/users/:id/role` - `{ role }`
+- `PATCH /api/users/:id/status` - `{ isActive }`
 
 ## Database Schema
 
@@ -178,7 +205,9 @@ mutabaah-app/
 | Variable | Description | Example |
 |----------|-------------|---------|
 | DATABASE_URL | MySQL database connection string | mysql://user:pass@host:port/db |
-| JWT_SECRET | Secret key for JWT token signing | your-secret-key |
+| JWT_SECRET | Secret key for JWT token signing (required, 32+ chars) | output of the command above |
+| SEED_SUPERADMIN_EMAIL | Email for the seeded superadmin | superadmin@mutabaah.com |
+| SEED_SUPERADMIN_PASSWORD | Password for the seeded superadmin (seed only) | (8+ chars) |
 | NODE_ENV | Environment mode | development, production |
 | PORT | Server port | 3000 |
 

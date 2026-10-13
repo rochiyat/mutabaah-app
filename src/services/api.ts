@@ -7,6 +7,7 @@ import type {
   GroupActivity,
   AuthResponse,
   ApiError,
+  Role,
 } from '@/types';
 
 const api: AxiosInstance = axios.create({
@@ -108,6 +109,10 @@ export const groupActivityAPI = {
       activityId,
       isRequired,
     }),
+  createActivity: (
+    groupId: number,
+    data: { name: string; category: string; target?: number; unit?: string; isRequired?: boolean }
+  ) => api.post<GroupActivity>(`/groups/${groupId}/activities`, data),
   removeActivity: (groupId: number, activityId: number) =>
     api.delete(`/groups/${groupId}/activities/${activityId}`),
   updateActivity: (groupId: number, activityId: number, data: any) =>
@@ -115,6 +120,13 @@ export const groupActivityAPI = {
       `/groups/${groupId}/activities/${activityId}`,
       data
     ),
+};
+
+export const userAPI = {
+  getUsers: (search?: string) => api.get<User[]>('/users', { params: { search } }),
+  updateRole: (id: number, role: Role) => api.patch<User>(`/users/${id}/role`, { role }),
+  updateStatus: (id: number, isActive: boolean) =>
+    api.patch<User>(`/users/${id}/status`, { isActive }),
 };
 
 export default api;

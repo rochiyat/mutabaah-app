@@ -34,7 +34,7 @@ export interface UpdateActivityDTO {
 
 export interface CreateRecordDTO {
   activityId: number;
-  date?: Date;
+  date?: string; // yyyy-MM-dd
   completed: number;
   notes?: string;
 }

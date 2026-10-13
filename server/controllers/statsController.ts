@@ -1,6 +1,33 @@
 import { Request, Response } from 'express'
 import { prisma } from '../utils/prisma'
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, format } from 'date-fns'
+import { addDays, startOfWeek, startOfMonth, endOfMonth, differenceInCalendarDays, subDays } from 'date-fns'
+import { getUserActivities } from '../utils/activityAccess'
+import { dateKeyToDb, localDateKey, toDateKey } from '../utils/date'
+
+const STREAK_LOOKBACK_DAYS = 366
+
+// Streak = jumlah hari berturut-turut user mengisi mutabaah (minimal satu amalan > 0).
+// Jika hari ini belum diisi, hitungan dimulai dari kemarin agar streak tidak putus di pagi hari.
+const calculateStreak = async (userId: number): Promise<number> => {
+  const today = new Date()
+  const records = await prisma.record.findMany({
+    where: {
+      userId,
+      completed: { gt: 0 },
+      date: { gte: dateKeyToDb(localDateKey(subDays(today, STREAK_LOOKBACK_DAYS))) },
+    },
+    select: { date: true },
+  })
+  const filledDays = new Set(records.map((r) => toDateKey(r.date)))
+
+  let cursor = filledDays.has(localDateKey(today)) ? today : subDays(today, 1)
+  let streak = 0
+  while (filledDays.has(localDateKey(cursor))) {
+    streak++
+    cursor = subDays(cursor, 1)
+  }
+  return streak
+}
 
 export const getDashboardStats = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -9,33 +36,30 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
       return
     }
 
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
+    const userId = req.user.userId
+    const activities = await getUserActivities(userId, { onlyActive: true })
 
-    const todayRecords = await prisma.record.aggregate({
+    const todayRecords = await prisma.record.findMany({
       where: {
-        userId: req.user.userId,
-        date: { gte: today }
+        userId,
+        date: dateKeyToDb(localDateKey()),
+        activityId: { in: activities.map((a) => a.id) },
       },
-      _sum: { completed: true },
-      _count: true
     })
 
-    const activities = await prisma.activity.findMany({
-      where: { userId: req.user.userId }
-    })
-
+    // Kelebihan dari target tidak dihitung, supaya capaian maksimal 100%
     const todayTarget = activities.reduce((sum, act) => sum + act.target, 0)
-    const todayCompleted = todayRecords._sum.completed || 0
+    const todayCompleted = activities.reduce((sum, act) => {
+      const record = todayRecords.find((r) => r.activityId === act.id)
+      return sum + Math.min(record?.completed ?? 0, act.target)
+    }, 0)
 
-    const stats = {
+    res.json({
       todayCompleted,
       todayTarget,
-      streak: 0,
-      totalActivities: activities.length
-    }
-
-    res.json(stats)
+      streak: await calculateStreak(userId),
+      totalActivities: activities.length,
+    })
   } catch (error) {
     res.status(500).json({ message: 'Gagal mengambil statistik' })
   }
@@ -48,50 +72,29 @@ export const getWeeklyStats = async (req: Request, res: Response): Promise<void>
       return
     }
 
-    const today = new Date()
-    const start = startOfWeek(today)
-    const end = endOfWeek(today)
+    const userId = req.user.userId
+    const start = startOfWeek(new Date(), { weekStartsOn: 1 }) // pekan dimulai Senin
+    const days = Array.from({ length: 7 }, (_, i) => localDateKey(addDays(start, i)))
 
-    const activities = await prisma.activity.findMany({
-      where: { userId: req.user.userId }
+    const activities = await getUserActivities(userId, { onlyActive: true })
+    const records = await prisma.record.findMany({
+      where: {
+        userId,
+        activityId: { in: activities.map((a) => a.id) },
+        date: { gte: dateKeyToDb(days[0]), lte: dateKeyToDb(days[6]) },
+      },
     })
 
-    const stats = await Promise.all(
-      activities.map(async (activity) => {
-        const records = await prisma.record.findMany({
-          where: {
-            activityId: activity.id,
-            userId: req.user!.userId,
-            date: { gte: start, lte: end }
-          }
-        })
-
-        const data = []
-        for (let i = 0; i < 7; i++) {
-          const date = new Date(start)
-          date.setDate(date.getDate() + i)
-          date.setHours(0, 0, 0, 0)
-
-          const record = records.find(r => {
-            const rDate = new Date(r.date)
-            rDate.setHours(0, 0, 0, 0)
-            return rDate.getTime() === date.getTime()
-          })
-
-          data.push({
-            date: format(date, 'yyyy-MM-dd'),
-            completed: record?.completed || 0,
-            target: activity.target
-          })
-        }
-
-        return {
-          activityId: activity.id,
-          activityName: activity.name,
-          data
-        }
-      })
-    )
+    const stats = activities.map((activity) => ({
+      activityId: activity.id,
+      activityName: activity.name,
+      data: days.map((day) => {
+        const record = records.find(
+          (r) => r.activityId === activity.id && toDateKey(r.date) === day
+        )
+        return { date: day, completed: record?.completed ?? 0, target: activity.target }
+      }),
+    }))
 
     res.json(stats)
   } catch (error) {
@@ -106,39 +109,39 @@ export const getMonthlyStats = async (req: Request, res: Response): Promise<void
       return
     }
 
+    const userId = req.user.userId
     const today = new Date()
     const start = startOfMonth(today)
     const end = endOfMonth(today)
+    // Target dihitung sampai hari ini (bukan sebulan penuh) agar persentase capaian akurat di tengah bulan
+    const daysElapsed = differenceInCalendarDays(today, start) + 1
 
-    const activities = await prisma.activity.findMany({
-      where: { userId: req.user.userId }
+    const activities = await getUserActivities(userId, { onlyActive: true })
+    const totals = await prisma.record.groupBy({
+      by: ['activityId'],
+      where: {
+        userId,
+        activityId: { in: activities.map((a) => a.id) },
+        date: { gte: dateKeyToDb(localDateKey(start)), lte: dateKeyToDb(localDateKey(end)) },
+      },
+      _sum: { completed: true },
     })
 
-    const stats = await Promise.all(
-      activities.map(async (activity) => {
-        const records = await prisma.record.aggregate({
-          where: {
-            activityId: activity.id,
-            userId: req.user!.userId,
-            date: { gte: start, lte: end }
-          },
-          _sum: { completed: true }
-        })
+    const stats = activities.map((activity) => {
+      const totalCompleted =
+        totals.find((t) => t.activityId === activity.id)?._sum.completed ?? 0
+      const totalTarget = activity.target * daysElapsed
+      const percentage =
+        totalTarget > 0 ? Math.min((totalCompleted / totalTarget) * 100, 100) : 0
 
-        const totalCompleted = records._sum.completed || 0
-        const daysInMonth = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
-        const totalTarget = activity.target * daysInMonth
-        const percentage = totalTarget > 0 ? (totalCompleted / totalTarget) * 100 : 0
-
-        return {
-          activityId: activity.id,
-          activityName: activity.name,
-          totalCompleted,
-          totalTarget,
-          percentage
-        }
-      })
-    )
+      return {
+        activityId: activity.id,
+        activityName: activity.name,
+        totalCompleted,
+        totalTarget,
+        percentage,
+      }
+    })
 
     res.json(stats)
   } catch (error) {

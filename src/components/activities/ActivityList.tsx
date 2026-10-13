@@ -52,14 +52,19 @@ export const ActivityList: React.FC = () => {
 
       <div className="activities">
         {activities.map(activity => (
-          <div key={activity.id} className="activity-card">
+          <div key={`${activity.isGroupActivity ? 'g' : 'p'}-${activity.id}`} className="activity-card">
             <h3>{activity.name}</h3>
+            {activity.isGroupActivity && (
+              <p>Amalan grup{activity.isRequired ? ' (wajib)' : ''}</p>
+            )}
             <p>Kategori: {activity.category}</p>
             <p>Target: {activity.target} {activity.unit}</p>
             <p>Status: {activity.isActive ? 'Aktif' : 'Tidak Aktif'}</p>
-            <button onClick={() => handleDelete(activity.id)} className="btn-danger">
-              Hapus
-            </button>
+            {!activity.isGroupActivity && (
+              <button onClick={() => handleDelete(activity.id)} className="btn-danger">
+                Hapus
+              </button>
+            )}
           </div>
         ))}
       </div>

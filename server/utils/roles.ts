@@ -1,0 +1,19 @@
+export const ROLES = ['superadmin', 'admin', 'murabbi', 'user'] as const
+
+export type Role = (typeof ROLES)[number]
+
+export const isRole = (value: unknown): value is Role =>
+  typeof value === 'string' && (ROLES as readonly string[]).includes(value)
+
+// superadmin & admin (pengurus) bisa mengelola semua grup dan user
+export const isManager = (role: string): boolean =>
+  role === 'superadmin' || role === 'admin'
+
+// Yang boleh membuat grup/halaqoh baru
+export const canCreateGroup = (role: string): boolean =>
+  isManager(role) || role === 'murabbi'
+
+export const canManageGroup = (
+  group: { adminId: number },
+  user: { userId: number; role: string }
+): boolean => group.adminId === user.userId || isManager(user.role)

@@ -1,5 +1,22 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
+import { canCreateGroup, canManageGroup, isManager } from '../utils/roles';
+
+// Jangan pernah ikut mengirim hash password user di respons
+const publicUserSelect = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+  groupId: true,
+  isActive: true,
+} as const;
+
+const groupInclude = {
+  admin: { select: publicUserSelect },
+  members: { select: publicUserSelect },
+  activities: { include: { activity: true } },
+} as const;
 
 export const getGroups = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -10,14 +27,10 @@ export const getGroups = async (req: Request, res: Response): Promise<void> => {
 
     let groups;
 
-    // Superadmin bisa lihat semua group
-    if (req.user.role === 'superadmin') {
+    // Superadmin & admin bisa lihat semua group
+    if (isManager(req.user.role)) {
       groups = await prisma.group.findMany({
-        include: {
-          admin: true,
-          members: true,
-          activities: { include: { activity: true } },
-        },
+        include: groupInclude,
         orderBy: { createdAt: 'desc' },
       });
     } else {
@@ -29,11 +42,7 @@ export const getGroups = async (req: Request, res: Response): Promise<void> => {
             { members: { some: { id: req.user.userId } } },
           ],
         },
-        include: {
-          admin: true,
-          members: true,
-          activities: { include: { activity: true } },
-        },
+        include: groupInclude,
         orderBy: { createdAt: 'desc' },
       });
     }
@@ -57,11 +66,7 @@ export const getGroupById = async (
     const { id } = req.params;
     const group = await prisma.group.findUnique({
       where: { id: parseInt(id) },
-      include: {
-        admin: true,
-        members: true,
-        activities: { include: { activity: true } },
-      },
+      include: groupInclude,
     });
 
     if (!group) {
@@ -70,11 +75,10 @@ export const getGroupById = async (
     }
 
     // Check if user is admin, member, or superadmin
-    const isAdmin = group.adminId === req.user.userId;
-    const isMember = group.members.some((m: any) => m.id === req.user.userId);
-    const isSuperadmin = req.user.role === 'superadmin';
+    const currentUser = req.user;
+    const isMember = group.members.some((m) => m.id === currentUser.userId);
 
-    if (!isAdmin && !isMember && !isSuperadmin) {
+    if (!isMember && !canManageGroup(group, currentUser)) {
       res.status(403).json({ message: 'Akses ditolak' });
       return;
     }
@@ -95,19 +99,27 @@ export const createGroup = async (
       return;
     }
 
+    if (!canCreateGroup(req.user.role)) {
+      res.status(403).json({
+        message: 'Hanya murabbi, admin, atau superadmin yang bisa membuat grup',
+      });
+      return;
+    }
+
     const { name, description } = req.body;
+
+    if (typeof name !== 'string' || !name.trim()) {
+      res.status(400).json({ message: 'Nama grup wajib diisi' });
+      return;
+    }
 
     const group = await prisma.group.create({
       data: {
-        name,
+        name: name.trim(),
         description,
         adminId: req.user.userId,
       },
-      include: {
-        admin: true,
-        members: true,
-        activities: { include: { activity: true } },
-      },
+      include: groupInclude,
     });
 
     res.status(201).json(group);
@@ -138,11 +150,7 @@ export const updateGroup = async (
       return;
     }
 
-    // Superadmin atau admin group bisa update
-    const isAdmin = group.adminId === req.user.userId;
-    const isSuperadmin = req.user.role === 'superadmin';
-
-    if (!isAdmin && !isSuperadmin) {
+    if (!canManageGroup(group, req.user)) {
       res.status(403).json({
         message: 'Hanya admin atau superadmin yang bisa mengupdate grup',
       });
@@ -152,11 +160,7 @@ export const updateGroup = async (
     const updated = await prisma.group.update({
       where: { id: parseInt(id) },
       data: { name, description, isActive },
-      include: {
-        admin: true,
-        members: true,
-        activities: { include: { activity: true } },
-      },
+      include: groupInclude,
     });
 
     res.json(updated);
@@ -185,11 +189,7 @@ export const deleteGroup = async (
       return;
     }
 
-    // Superadmin atau admin group bisa delete
-    const isAdmin = group.adminId === req.user.userId;
-    const isSuperadmin = req.user.role === 'superadmin';
-
-    if (!isAdmin && !isSuperadmin) {
+    if (!canManageGroup(group, req.user)) {
       res.status(403).json({
         message: 'Hanya admin atau superadmin yang bisa menghapus grup',
       });
@@ -217,10 +217,31 @@ export const addMember = async (req: Request, res: Response): Promise<void> => {
       where: { id: parseInt(groupId) },
     });
 
-    if (!group || group.adminId !== req.user.userId) {
+    if (!group) {
+      res.status(404).json({ message: 'Grup tidak ditemukan' });
+      return;
+    }
+
+    if (!canManageGroup(group, req.user)) {
       res
         .status(403)
-        .json({ message: 'Hanya admin yang bisa menambah member' });
+        .json({ message: 'Hanya admin grup yang bisa menambah member' });
+      return;
+    }
+
+    const member = await prisma.user.findUnique({
+      where: { id: Number(userId) },
+    });
+    if (!member || !member.isActive) {
+      res.status(404).json({ message: 'User tidak ditemukan atau tidak aktif' });
+      return;
+    }
+
+    // Saat ini satu user hanya bisa di satu grup; jangan pindahkan diam-diam
+    if (member.groupId && member.groupId !== group.id) {
+      res.status(409).json({
+        message: 'User sudah terdaftar di grup lain, keluarkan dulu dari grup tersebut',
+      });
       return;
     }
 
@@ -228,14 +249,10 @@ export const addMember = async (req: Request, res: Response): Promise<void> => {
       where: { id: parseInt(groupId) },
       data: {
         members: {
-          connect: { id: userId },
+          connect: { id: member.id },
         },
       },
-      include: {
-        admin: true,
-        members: true,
-        activities: { include: { activity: true } },
-      },
+      include: groupInclude,
     });
 
     res.json(updated);
@@ -260,10 +277,15 @@ export const removeMember = async (
       where: { id: parseInt(groupId) },
     });
 
-    if (!group || group.adminId !== req.user.userId) {
+    if (!group) {
+      res.status(404).json({ message: 'Grup tidak ditemukan' });
+      return;
+    }
+
+    if (!canManageGroup(group, req.user)) {
       res
         .status(403)
-        .json({ message: 'Hanya admin yang bisa menghapus member' });
+        .json({ message: 'Hanya admin grup yang bisa menghapus member' });
       return;
     }
 
@@ -274,11 +296,7 @@ export const removeMember = async (
           disconnect: { id: parseInt(userId) },
         },
       },
-      include: {
-        admin: true,
-        members: true,
-        activities: { include: { activity: true } },
-      },
+      include: groupInclude,
     });
 
     res.json(updated);
@@ -301,7 +319,7 @@ export const getMembers = async (
 
     const group = await prisma.group.findUnique({
       where: { id: parseInt(groupId) },
-      include: { members: true },
+      include: { members: { select: publicUserSelect } },
     });
 
     if (!group) {
@@ -310,11 +328,10 @@ export const getMembers = async (
     }
 
     // Check if user is admin, member, or superadmin
-    const isAdmin = group.adminId === req.user.userId;
-    const isMember = group.members.some((m: any) => m.id === req.user.userId);
-    const isSuperadmin = req.user.role === 'superadmin';
+    const currentUser = req.user;
+    const isMember = group.members.some((m) => m.id === currentUser.userId);
 
-    if (!isAdmin && !isMember && !isSuperadmin) {
+    if (!isMember && !canManageGroup(group, currentUser)) {
       res.status(403).json({ message: 'Akses ditolak' });
       return;
     }

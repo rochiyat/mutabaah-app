@@ -1,8 +1,10 @@
+export type Role = 'superadmin' | 'admin' | 'murabbi' | 'user';
+
 export interface User {
   id: number;
   email: string;
   name: string;
-  role: string;
+  role: Role;
   groupId?: number | null;
   isActive: boolean;
   createdAt: string;
@@ -29,6 +31,8 @@ export interface Activity {
   unit: string;
   isActive: boolean;
   userId?: number | null;
+  isGroupActivity?: boolean;
+  isRequired?: boolean;
   createdAt: string;
   updatedAt: string;
 }

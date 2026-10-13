@@ -1,6 +1,6 @@
+import 'dotenv/config';
 import express, { Express } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import authRoutes from './routes/auth';
@@ -8,9 +8,11 @@ import activityRoutes from './routes/activities';
 import recordRoutes from './routes/records';
 import statsRoutes from './routes/stats';
 import groupRoutes from './routes/groups';
+import userRoutes from './routes/users';
 import { errorHandler } from './middleware/errorHandler';
+import { assertJwtSecret } from './utils/jwt';
 
-dotenv.config();
+assertJwtSecret();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,12 +29,18 @@ app.use('/api/activities', activityRoutes);
 app.use('/api/records', recordRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/groups', groupRoutes);
+app.use('/api/users', userRoutes);
+
+// Endpoint API yang tidak dikenal jangan jatuh ke SPA fallback
+app.use('/api', (_req, res) => {
+  res.status(404).json({ message: 'Endpoint tidak ditemukan' });
+});
 
 // Serve static files from dist
 app.use(express.static(path.join(__dirname, '../dist')));
 
 // SPA fallback - serve index.html for all non-API routes
-app.get('*', (req, res) => {
+app.get('*', (_req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
