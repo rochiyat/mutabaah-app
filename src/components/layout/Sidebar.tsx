@@ -38,6 +38,11 @@ export const Sidebar: React.FC = () => {
             Kajian
           </Link>
         </li>
+        <li>
+          <Link to="/laporan" className={isActive('/laporan') ? 'active' : ''}>
+            Laporan
+          </Link>
+        </li>
         {isManager && (
           <li>
             <Link to="/users" className={isActive('/users') ? 'active' : ''}>

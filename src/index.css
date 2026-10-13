@@ -738,7 +738,245 @@ label.checkbox {
   text-decoration: underline;
 }
 
+/* Laporan */
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 2px solid #ecf0f1;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+}
+
+.tabs button {
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  color: #555;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tabs button.selected {
+  border-bottom-color: #3498db;
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.report-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.report-controls select,
+.period-picker input {
+  padding: 0.45rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+}
+
+.period-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  color: #2c3e50;
+}
+
+.segmented {
+  display: inline-flex;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.segmented button {
+  background: white;
+  border: none;
+  border-right: 1px solid #ddd;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #2c3e50;
+}
+
+.segmented button:last-child {
+  border-right: none;
+}
+
+.segmented button.selected {
+  background: #3498db;
+  color: white;
+}
+
+.segmented button:disabled:not(.selected) {
+  opacity: 1;
+  color: #999;
+  cursor: default;
+}
+
+.stats-grid.report-cards {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.report-subtitle {
+  color: #2c3e50;
+  margin: 1.5rem 0 0.75rem;
+  font-size: 1.05rem;
+}
+
+.report-note {
+  margin-top: 0.75rem;
+}
+
+.th-sub {
+  display: block;
+  font-weight: 400;
+  font-size: 0.8rem;
+}
+
+.report-table th,
+.report-table td {
+  white-space: nowrap;
+}
+
+.report-table tfoot td {
+  background: #f9f9f9;
+  border-top: 2px solid #ddd;
+}
+
+.progress {
+  position: relative;
+  min-width: 90px;
+  height: 22px;
+  background: #ecf0f1;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress.compact {
+  height: 18px;
+}
+
+.progress-bar {
+  height: 100%;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.progress-good .progress-bar { background: #58d68d; }
+.progress-mid .progress-bar { background: #f7dc6f; }
+.progress-low .progress-bar { background: #f1948a; }
+
+.progress-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.matrix td {
+  text-align: center;
+}
+
+.matrix td:first-child {
+  text-align: left;
+}
+
+.status-code {
+  min-width: 1.6rem;
+  padding: 0.1rem 0.4rem;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.cell-done {
+  background: #d5f5e3;
+  font-weight: 600;
+}
+
+.cell-partial {
+  background: #fcf3cf;
+}
+
+.cell-empty {
+  color: #bbb;
+}
+
+.cell-done,
+.cell-partial {
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  body {
+    background: white;
+  }
+
+  .navbar,
+  .sidebar,
+  .no-print {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .main-content {
+    padding: 0;
+  }
+
+  .activity-list {
+    padding: 0;
+  }
+
+  .table-wrap {
+    overflow: visible;
+  }
+
+  .report-table {
+    font-size: 0.8rem;
+  }
+
+  .report-table th,
+  .report-table td {
+    padding: 0.3rem 0.4rem;
+  }
+
+  tr {
+    break-inside: avoid;
+  }
+
+  a,
+  .table a {
+    color: inherit;
+    text-decoration: none;
+  }
+}
+
 @media (max-width: 768px) {
+  .stats-grid.report-cards {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
   .stats-grid.attendance-counts {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

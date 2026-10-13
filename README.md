@@ -188,6 +188,15 @@ A meeting (`Meeting`) belongs to either a halaqoh or a kajian. Attendance status
 
 Kajian participants only see attendance counts and their own status; the full list is visible to the kajian's managers.
 
+### Reports
+All accept `?start=yyyy-MM-dd&end=yyyy-MM-dd` (default: current month, max 366 days) and `?format=xlsx` for an Excel download. PDF is done from the browser's print dialog ("Cetak / PDF"), with a print stylesheet.
+- `GET /api/reports/groups/:groupId/mutabaah` - per member and per activity achievement, ranked (murabbi of the halaqoh / admin)
+- `GET /api/reports/groups/:groupId/attendance` - per member hadir/izin/sakit/alpa/belum diisi, per meeting matrix
+- `GET /api/reports/kajian/:id/attendance` - per participant, percentage over all sessions in the period (kajian managers)
+- `GET /api/reports/users/:userId/mutabaah?groupId=` - daily detail; without `groupId` only for yourself (all your activities), with `groupId` for the halaqoh's murabbi (that halaqoh's activities only)
+
+Achievement = recorded amount (capped at the daily target) / (target × days counted). Days after today are not counted.
+
 ### Users (superadmin/admin; murabbi and halaqoh murabbi members can list)
 - `GET /api/users?search=` - List users
 - `PATCH /api/users/:id/role` - `{ role }`

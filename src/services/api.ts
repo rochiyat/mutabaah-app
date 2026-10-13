@@ -20,6 +20,9 @@ import type {
   Meeting,
   MeetingDetail,
   MeetingInput,
+  GroupMutabaahReport,
+  AttendanceReport,
+  UserMutabaahReport,
 } from '@/types';
 
 const api: AxiosInstance = axios.create({
@@ -167,6 +170,38 @@ export const userAPI = {
   updateRole: (id: number, role: Role) => api.patch<User>(`/users/${id}/role`, { role }),
   updateStatus: (id: number, isActive: boolean) =>
     api.patch<User>(`/users/${id}/status`, { isActive }),
+};
+
+type PeriodParams = { start: string; end: string };
+
+// Unduh file lewat axios supaya header Authorization ikut terkirim
+const downloadFile = async (url: string, params: Record<string, unknown>, fallbackName: string) => {
+  const response = await api.get<Blob>(url, { params, responseType: 'blob' });
+  const disposition = String(response.headers['content-disposition'] ?? '');
+  const match = disposition.match(/filename="?([^"]+)"?/);
+  const href = URL.createObjectURL(response.data);
+  const link = document.createElement('a');
+  link.href = href;
+  link.download = match?.[1] ?? fallbackName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(href);
+};
+
+export const reportAPI = {
+  groupMutabaah: (groupId: number, period: PeriodParams) =>
+    api.get<GroupMutabaahReport>(`/reports/groups/${groupId}/mutabaah`, { params: period }),
+  groupAttendance: (groupId: number, period: PeriodParams) =>
+    api.get<AttendanceReport>(`/reports/groups/${groupId}/attendance`, { params: period }),
+  kajianAttendance: (kajianId: number, period: PeriodParams) =>
+    api.get<AttendanceReport>(`/reports/kajian/${kajianId}/attendance`, { params: period }),
+  userMutabaah: (userId: number, period: PeriodParams, groupId?: number) =>
+    api.get<UserMutabaahReport>(`/reports/users/${userId}/mutabaah`, {
+      params: { ...period, groupId },
+    }),
+  download: (path: string, period: PeriodParams, extra: Record<string, unknown> = {}) =>
+    downloadFile(`/reports/${path}`, { ...period, ...extra, format: 'xlsx' }, 'laporan.xlsx'),
 };
 
 export default api;

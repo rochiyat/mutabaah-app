@@ -14,3 +14,19 @@ export const isDateKey = (value: unknown): value is string =>
   typeof value === 'string' &&
   /^\d{4}-\d{2}-\d{2}$/.test(value) &&
   !Number.isNaN(dateKeyToDb(value).getTime())
+
+// 'yyyy-MM-dd' -> Date lokal tengah malam (untuk aritmetika hari dengan date-fns)
+export const parseDateKey = (key: string): Date => {
+  const [y, m, d] = key.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
+
+export const eachDateKey = (start: string, end: string): string[] => {
+  const keys: string[] = []
+  for (let d = parseDateKey(start); localDateKey(d) <= end; d.setDate(d.getDate() + 1)) {
+    keys.push(localDateKey(d))
+  }
+  return keys
+}
+
+export const minDateKey = (a: string, b: string): string => (a < b ? a : b)

@@ -18,6 +18,8 @@ import { UsersPage } from '@/pages/UsersPage';
 import { KajianListPage } from '@/pages/KajianListPage';
 import { KajianDetailPage } from '@/pages/KajianDetailPage';
 import { MeetingDetailPage } from '@/pages/MeetingDetailPage';
+import { ReportsPage } from '@/pages/ReportsPage';
+import { MemberReportPage } from '@/pages/MemberReportPage';
 import type { Role } from '@/types';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -124,6 +126,22 @@ const AppContent: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <MeetingDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/laporan"
+              element={
+                <ProtectedRoute>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/laporan/anggota/:userId"
+              element={
+                <ProtectedRoute>
+                  <MemberReportPage />
                 </ProtectedRoute>
               }
             />

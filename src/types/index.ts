@@ -206,3 +206,84 @@ export interface Kajian {
 export interface KajianDetail extends Kajian {
   meetings: Meeting[];
 }
+
+// ===== Laporan =====
+
+export interface ReportPeriod {
+  start: string;
+  end: string;
+  daysCounted?: number;
+}
+
+export interface ReportActivity {
+  id: number;
+  name: string;
+  unit: string;
+  target: number;
+  isRequired: boolean;
+}
+
+export interface ProgressValue {
+  completed: number;
+  target: number;
+  percent: number | null;
+}
+
+export interface GroupMutabaahReport {
+  group: { id: number; name: string };
+  period: ReportPeriod;
+  activities: (ReportActivity & { avgPercent: number | null })[];
+  members: {
+    userId: number;
+    name: string;
+    email: string;
+    role: GroupMemberRole;
+    daysFilled: number;
+    totalCompleted: number;
+    totalTarget: number;
+    percent: number | null;
+    perActivity: Record<number, ProgressValue>;
+  }[];
+  summary: { memberCount: number; avgPercent: number | null };
+}
+
+export interface AttendanceReport {
+  group?: { id: number; name: string };
+  kajian?: { id: number; title: string };
+  period: ReportPeriod;
+  meetings: {
+    id: number;
+    date: string;
+    topic: string;
+    startTime?: string | null;
+    counts: AttendanceCounts;
+  }[];
+  members: {
+    userId: number;
+    name: string;
+    role: GroupMemberRole | null;
+    hadir: number;
+    izin: number;
+    sakit: number;
+    alpa: number;
+    belum: number;
+    total: number;
+    percent: number | null;
+    // status, null = belum diisi, 'na' = tidak dihitung / tidak tercatat
+    perMeeting: Record<number, AttendanceStatus | 'na' | null>;
+  }[];
+  summary: { meetingCount: number; participantCount: number; avgPercent: number | null };
+}
+
+export interface UserMutabaahReport {
+  user: { id: number; name: string; email: string };
+  group: { id: number; name: string } | null;
+  period: ReportPeriod;
+  activities: (ReportActivity & {
+    completed: number;
+    targetTotal: number;
+    percent: number | null;
+  })[];
+  days: { date: string; values: Record<number, number> }[];
+  summary: { percent: number | null; daysFilled: number };
+}
