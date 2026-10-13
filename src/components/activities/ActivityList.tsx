@@ -55,7 +55,10 @@ export const ActivityList: React.FC = () => {
           <div key={`${activity.isGroupActivity ? 'g' : 'p'}-${activity.id}`} className="activity-card">
             <h3>{activity.name}</h3>
             {activity.isGroupActivity && (
-              <p>Amalan grup{activity.isRequired ? ' (wajib)' : ''}</p>
+              <p>
+                Amalan halaqoh{activity.isRequired ? ' (wajib)' : ''}
+                {activity.groups?.length ? `: ${activity.groups.map((g) => g.name).join(', ')}` : ''}
+              </p>
             )}
             <p>Kategori: {activity.category}</p>
             <p>Target: {activity.target} {activity.unit}</p>

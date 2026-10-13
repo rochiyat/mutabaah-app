@@ -83,7 +83,15 @@ npm run prisma:seed
 | `superadmin` | Everything, including granting/revoking `superadmin` |
 | `admin` | Manage all users (except superadmins) and all groups |
 | `murabbi` | Create groups and manage the groups they lead |
-| `user` | Personal activities plus the activities of the group they belong to |
+| `user` | Personal activities plus the activities of every halaqoh they belong to |
+
+### Halaqoh (groups)
+
+A user can join several halaqoh. Inside a halaqoh each member is either `murabbi` or `mutarabbi`:
+
+- The **penanggung jawab** (`Group.adminId`) is always a murabbi member. Only they, or a superadmin/admin, can delete the halaqoh or hand the role to another member.
+- Any **murabbi member** (even with account role `user`) can edit the halaqoh, manage members and activities, and search users to add.
+- **Mutarabbi** see the halaqoh and its activities, and can leave on their own.
 
 Role and active status are read from the database on every request, so changes apply immediately.
 
@@ -159,12 +167,13 @@ mutabaah-app/
 - `GET /api/stats/monthly` - Per-activity totals for the current month, target counted up to today
 
 ### Groups
-- `GET|POST /api/groups`, `GET|PATCH|DELETE /api/groups/:id`
-- `GET|POST /api/groups/:groupId/members`, `DELETE /api/groups/:groupId/members/:userId`
+- `GET|POST /api/groups`, `GET|PATCH|DELETE /api/groups/:id` - fields: `name, description, level, schedule, location, isActive, adminId`
+- `GET|POST /api/groups/:groupId/members` - POST takes `{ userId, role? }`
+- `PATCH|DELETE /api/groups/:groupId/members/:userId` - PATCH takes `{ role }`; members may DELETE themselves
 - `GET|POST /api/groups/:groupId/activities` - POST takes `{ activityId }` or `{ name, category, target, unit }` for a new group activity
 - `PATCH|DELETE /api/groups/:groupId/activities/:activityId`
 
-### Users (superadmin/admin; murabbi can list)
+### Users (superadmin/admin; murabbi and halaqoh murabbi members can list)
 - `GET /api/users?search=` - List users
 - `PATCH /api/users/:id/role` - `{ role }`
 - `PATCH /api/users/:id/status` - `{ isActive }`

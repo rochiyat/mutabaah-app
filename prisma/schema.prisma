@@ -13,83 +13,100 @@ model User {
   name      String
   password  String
   role      String   @default("user")
-  groupId   Int?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  group           Group?           @relation("GroupMembers", fields: [groupId], references: [id], onDelete: SetNull)
-  adminGroups     Group[]          @relation("GroupAdmin")
-  activities      Activity[]
-  records         Record[]
-  
-  @@index([groupId])
+
+  memberships GroupMember[]
+  adminGroups Group[]       @relation("GroupAdmin")
+  activities  Activity[]
+  records     Record[]
+
   @@index([role])
 }
 
+// Group = halaqoh / kelompok binaan. adminId = murabbi penanggung jawab.
 model Group {
   id          Int      @id @default(autoincrement())
   name        String
   description String?  @db.Text
+  level       String? // jenjang, mis. "Pemula", "Madya"
+  schedule    String? // jadwal pertemuan, mis. "Ahad 08.00"
+  location    String? // tempat atau link online
   adminId     Int
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-  
-  admin       User              @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Cascade)
-  members     User[]            @relation("GroupMembers")
-  activities  GroupActivity[]
-  
+
+  admin      User            @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  members    GroupMember[]
+  activities GroupActivity[]
+
   @@index([adminId])
 }
 
+// Keanggotaan halaqoh. role: "murabbi" (ikut mengelola) atau "mutarabbi" (peserta)
+model GroupMember {
+  id       Int      @id @default(autoincrement())
+  groupId  Int
+  userId   Int
+  role     String   @default("mutarabbi")
+  joinedAt DateTime @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([userId])
+}
+
 model Activity {
-  id          Int      @id @default(autoincrement())
-  name        String
-  category    String
-  target      Int      @default(1)
-  unit        String   @default("kali")
-  isActive    Boolean  @default(true)
-  userId      Int?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        Int      @id @default(autoincrement())
+  name      String
+  category  String
+  target    Int      @default(1)
+  unit      String   @default("kali")
+  isActive  Boolean  @default(true)
+  userId    Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   groupActivities GroupActivity[]
-  records     Record[]
-  
+  records         Record[]
+
   @@index([userId])
 }
 
 model GroupActivity {
-  id          Int      @id @default(autoincrement())
-  groupId     Int
-  activityId  Int
-  isRequired  Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  group       Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  
+  id         Int      @id @default(autoincrement())
+  groupId    Int
+  activityId Int
+  isRequired Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  group    Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+
   @@unique([groupId, activityId])
   @@index([groupId])
   @@index([activityId])
 }
 
 model Record {
-  id          Int      @id @default(autoincrement())
-  date        DateTime @db.Date
-  completed   Int      @default(0)
-  notes       String?  @db.Text
-  activityId  Int
-  userId      Int
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  activity    Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id         Int      @id @default(autoincrement())
+  date       DateTime @db.Date
+  completed  Int      @default(0)
+  notes      String?  @db.Text
+  activityId Int
+  userId     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([activityId, date, userId])
   @@index([userId, date])
 }

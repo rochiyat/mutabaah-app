@@ -13,7 +13,32 @@ export const isManager = (role: string): boolean =>
 export const canCreateGroup = (role: string): boolean =>
   isManager(role) || role === 'murabbi'
 
+// Peran di dalam halaqoh (berbeda dengan role akun)
+export const GROUP_MEMBER_ROLES = ['murabbi', 'mutarabbi'] as const
+
+export type GroupMemberRole = (typeof GROUP_MEMBER_ROLES)[number]
+
+export const isGroupMemberRole = (value: unknown): value is GroupMemberRole =>
+  typeof value === 'string' && (GROUP_MEMBER_ROLES as readonly string[]).includes(value)
+
+type GroupWithMembers = {
+  adminId: number
+  members: { userId: number; role: string }[]
+}
+
+export const isGroupMember = (group: GroupWithMembers, userId: number): boolean =>
+  group.adminId === userId || group.members.some((m) => m.userId === userId)
+
+// Murabbi penanggung jawab, murabbi pendamping, atau pengurus (admin/superadmin)
 export const canManageGroup = (
-  group: { adminId: number },
+  group: GroupWithMembers,
   user: { userId: number; role: string }
-): boolean => group.adminId === user.userId || isManager(user.role)
+): boolean =>
+  group.adminId === user.userId ||
+  isManager(user.role) ||
+  group.members.some((m) => m.userId === user.userId && m.role === 'murabbi')
+
+export const canViewGroup = (
+  group: GroupWithMembers,
+  user: { userId: number; role: string }
+): boolean => isGroupMember(group, user.userId) || canManageGroup(group, user)

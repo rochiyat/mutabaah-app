@@ -1,6 +1,15 @@
 import { prisma } from './prisma'
 
-// Amalan yang berlaku untuk user: amalan pribadi + amalan grup tempat dia menjadi anggota
+// Id halaqoh aktif tempat user menjadi anggota (murabbi maupun mutarabbi)
+const getActiveGroupIds = async (userId: number): Promise<number[]> => {
+  const memberships = await prisma.groupMember.findMany({
+    where: { userId, group: { isActive: true } },
+    select: { groupId: true },
+  })
+  return memberships.map((m) => m.groupId)
+}
+
+// Amalan yang berlaku untuk user: amalan pribadi + amalan semua halaqoh yang dia ikuti
 export const getUserActivities = async (
   userId: number,
   options: { onlyActive?: boolean } = {}
@@ -12,32 +21,51 @@ export const getUserActivities = async (
     orderBy: { createdAt: 'desc' },
   })
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { groupId: true, group: { select: { isActive: true } } },
-  })
+  const groupIds = await getActiveGroupIds(userId)
+  const groupLinks = groupIds.length
+    ? await prisma.groupActivity.findMany({
+        where: { groupId: { in: groupIds }, activity: activeFilter },
+        include: { activity: true, group: { select: { id: true, name: true } } },
+        orderBy: { createdAt: 'desc' },
+      })
+    : []
 
-  if (!user?.groupId || !user.group?.isActive) {
-    return personal.map((a) => ({ ...a, isGroupActivity: false, isRequired: false }))
+  // Satu amalan bisa dipakai beberapa halaqoh; tampilkan sekali, wajib jika wajib di salah satunya
+  const groupActivities = new Map<
+    number,
+    (typeof groupLinks)[number]['activity'] & {
+      isGroupActivity: true
+      isRequired: boolean
+      groups: { id: number; name: string }[]
+    }
+  >()
+  for (const link of groupLinks) {
+    const existing = groupActivities.get(link.activityId)
+    if (existing) {
+      existing.isRequired = existing.isRequired || link.isRequired
+      existing.groups.push(link.group)
+    } else {
+      groupActivities.set(link.activityId, {
+        ...link.activity,
+        isGroupActivity: true,
+        isRequired: link.isRequired,
+        groups: [link.group],
+      })
+    }
   }
 
-  const groupLinks = await prisma.groupActivity.findMany({
-    where: { groupId: user.groupId, activity: activeFilter },
-    include: { activity: true },
-    orderBy: { createdAt: 'desc' },
-  })
-
   return [
-    ...personal.map((a) => ({ ...a, isGroupActivity: false, isRequired: false })),
-    ...groupLinks.map((ga) => ({
-      ...ga.activity,
-      isGroupActivity: true,
-      isRequired: ga.isRequired,
+    ...personal.map((a) => ({
+      ...a,
+      isGroupActivity: false,
+      isRequired: false,
+      groups: [] as { id: number; name: string }[],
     })),
+    ...groupActivities.values(),
   ]
 }
 
-// Apakah user boleh mencatat amalan ini (milik sendiri, atau amalan grupnya)
+// Apakah user boleh mencatat amalan ini (milik sendiri, atau amalan halaqohnya)
 export const canRecordActivity = async (
   userId: number,
   activityId: number
@@ -47,15 +75,11 @@ export const canRecordActivity = async (
   if (activity.userId === userId) return true
   if (activity.userId !== null) return false
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { groupId: true },
-  })
-  if (!user?.groupId) return false
+  const groupIds = await getActiveGroupIds(userId)
+  if (!groupIds.length) return false
 
-  const link = await prisma.groupActivity.findUnique({
-    where: { groupId_activityId: { groupId: user.groupId, activityId } },
-    include: { group: { select: { isActive: true } } },
+  const link = await prisma.groupActivity.findFirst({
+    where: { activityId, groupId: { in: groupIds } },
   })
-  return !!link && link.group.isActive
+  return !!link
 }

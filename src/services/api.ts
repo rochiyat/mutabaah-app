@@ -5,6 +5,10 @@ import type {
   ActivityRecord,
   Group,
   GroupActivity,
+  GroupDetail,
+  GroupInput,
+  GroupMember,
+  GroupMemberRole,
   AuthResponse,
   ApiError,
   Role,
@@ -87,18 +91,19 @@ export const statsAPI = {
 
 export const groupAPI = {
   getGroups: () => api.get<Group[]>('/groups'),
-  getGroupById: (id: number) => api.get<Group>(`/groups/${id}`),
-  createGroup: (name: string, description?: string) =>
-    api.post<Group>('/groups', { name, description }),
-  updateGroup: (id: number, data: any) =>
-    api.patch<Group>(`/groups/${id}`, data),
+  getGroupById: (id: number) => api.get<GroupDetail>(`/groups/${id}`),
+  createGroup: (data: GroupInput) => api.post<GroupDetail>('/groups', data),
+  updateGroup: (id: number, data: GroupInput) =>
+    api.patch<GroupDetail>(`/groups/${id}`, data),
   deleteGroup: (id: number) => api.delete(`/groups/${id}`),
-  addMember: (groupId: number, userId: number) =>
-    api.post(`/groups/${groupId}/members`, { userId }),
+  getMembers: (groupId: number) =>
+    api.get<GroupMember[]>(`/groups/${groupId}/members`),
+  addMember: (groupId: number, userId: number, role: GroupMemberRole = 'mutarabbi') =>
+    api.post<GroupMember>(`/groups/${groupId}/members`, { userId, role }),
+  updateMember: (groupId: number, userId: number, role: GroupMemberRole) =>
+    api.patch<GroupMember>(`/groups/${groupId}/members/${userId}`, { role }),
   removeMember: (groupId: number, userId: number) =>
     api.delete(`/groups/${groupId}/members/${userId}`),
-  getMembers: (groupId: number) =>
-    api.get<User[]>(`/groups/${groupId}/members`),
 };
 
 export const groupActivityAPI = {

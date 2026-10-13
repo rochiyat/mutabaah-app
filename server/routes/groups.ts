@@ -17,6 +17,7 @@ router.delete('/:id', groupController.deleteGroup);
 // Member routes
 router.get('/:groupId/members', groupController.getMembers);
 router.post('/:groupId/members', groupController.addMember);
+router.patch('/:groupId/members/:userId', groupController.updateMember);
 router.delete('/:groupId/members/:userId', groupController.removeMember);
 
 // Group Activity routes

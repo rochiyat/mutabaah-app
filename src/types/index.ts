@@ -5,22 +5,56 @@ export interface User {
   email: string;
   name: string;
   role: Role;
-  groupId?: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
+export type PublicUser = Pick<User, 'id' | 'email' | 'name' | 'role' | 'isActive'>;
+
+export type GroupMemberRole = 'murabbi' | 'mutarabbi';
+
+export interface GroupMember {
+  id: number;
+  groupId: number;
+  userId: number;
+  role: GroupMemberRole;
+  joinedAt: string;
+  user: PublicUser;
+}
+
+// Group = halaqoh
 export interface Group {
   id: number;
   name: string;
-  description?: string;
+  description?: string | null;
+  level?: string | null;
+  schedule?: string | null;
+  location?: string | null;
   adminId: number;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  admin?: User;
-  members?: User[];
+  admin?: PublicUser;
+  memberCount?: number;
+  activityCount?: number;
+  myRole?: GroupMemberRole | null;
+}
+
+export interface GroupDetail extends Group {
+  members: GroupMember[];
+  activities: GroupActivity[];
+  canManage: boolean;
+}
+
+export interface GroupInput {
+  name?: string;
+  description?: string | null;
+  level?: string | null;
+  schedule?: string | null;
+  location?: string | null;
+  isActive?: boolean;
+  adminId?: number;
 }
 
 export interface Activity {
@@ -33,6 +67,7 @@ export interface Activity {
   userId?: number | null;
   isGroupActivity?: boolean;
   isRequired?: boolean;
+  groups?: { id: number; name: string }[];
   createdAt: string;
   updatedAt: string;
 }

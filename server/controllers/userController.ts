@@ -1,13 +1,12 @@
 import { Request, Response } from 'express'
 import { prisma } from '../utils/prisma'
-import { isRole } from '../utils/roles'
+import { canCreateGroup, isRole } from '../utils/roles'
 
 const userSelect = {
   id: true,
   email: true,
   name: true,
   role: true,
-  groupId: true,
   isActive: true,
   createdAt: true,
   updatedAt: true,
@@ -15,6 +14,17 @@ const userSelect = {
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   try {
+    // Pengurus & murabbi, atau user yang menjadi murabbi di salah satu halaqoh
+    const allowed =
+      canCreateGroup(req.user!.role) ||
+      (await prisma.groupMember.count({
+        where: { userId: req.user!.userId, role: 'murabbi' },
+      })) > 0
+    if (!allowed) {
+      res.status(403).json({ message: 'Akses ditolak' })
+      return
+    }
+
     const search = typeof req.query.search === 'string' ? req.query.search.trim() : ''
 
     const users = await prisma.user.findMany({

@@ -1,10 +1,14 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '@/hooks/useAuth'
 
 export const Sidebar: React.FC = () => {
   const location = useLocation()
+  const { user } = useAuth()
 
-  const isActive = (path: string) => location.pathname === path
+  const isActive = (path: string) =>
+    location.pathname === path || location.pathname.startsWith(`${path}/`)
+  const isManager = user?.role === 'superadmin' || user?.role === 'admin'
 
   return (
     <aside className="sidebar">
@@ -24,6 +28,18 @@ export const Sidebar: React.FC = () => {
             Statistik
           </Link>
         </li>
+        <li>
+          <Link to="/halaqoh" className={isActive('/halaqoh') ? 'active' : ''}>
+            Halaqoh
+          </Link>
+        </li>
+        {isManager && (
+          <li>
+            <Link to="/users" className={isActive('/users') ? 'active' : ''}>
+              Kelola User
+            </Link>
+          </li>
+        )}
       </ul>
     </aside>
   )

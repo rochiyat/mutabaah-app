@@ -1,12 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
-import { canManageGroup } from '../utils/roles';
-
-const findGroup = (groupId: string) =>
-  prisma.group.findUnique({
-    where: { id: parseInt(groupId) },
-    include: { members: { select: { id: true } } },
-  });
+import { findGroupForAccess as findGroup } from '../utils/groupAccess';
+import { canManageGroup, canViewGroup } from '../utils/roles';
 
 export const getGroupActivities = async (
   req: Request,
@@ -22,14 +17,11 @@ export const getGroupActivities = async (
     const group = await findGroup(groupId);
 
     if (!group) {
-      res.status(404).json({ message: 'Grup tidak ditemukan' });
+      res.status(404).json({ message: 'Halaqoh tidak ditemukan' });
       return;
     }
 
-    const currentUser = req.user;
-    const isMember = group.members.some((m) => m.id === currentUser.userId);
-
-    if (!isMember && !canManageGroup(group, currentUser)) {
+    if (!canViewGroup(group, req.user)) {
       res.status(403).json({ message: 'Akses ditolak' });
       return;
     }
@@ -64,14 +56,14 @@ export const addActivity = async (
     const group = await findGroup(groupId);
 
     if (!group) {
-      res.status(404).json({ message: 'Grup tidak ditemukan' });
+      res.status(404).json({ message: 'Halaqoh tidak ditemukan' });
       return;
     }
 
     if (!canManageGroup(group, req.user)) {
       res
         .status(403)
-        .json({ message: 'Hanya admin grup yang bisa menambah aktivitas' });
+        .json({ message: 'Hanya murabbi halaqoh yang bisa menambah aktivitas' });
       return;
     }
 
@@ -83,7 +75,7 @@ export const addActivity = async (
       });
       // Amalan pribadi milik user tidak boleh dijadikan amalan grup
       if (!existing || existing.userId !== null) {
-        res.status(404).json({ message: 'Amalan grup tidak ditemukan' });
+        res.status(404).json({ message: 'Amalan halaqoh tidak ditemukan' });
         return;
       }
       targetActivityId = existing.id;
@@ -118,7 +110,7 @@ export const addActivity = async (
     res.status(201).json(groupActivity);
   } catch (error: any) {
     if (error.code === 'P2002') {
-      res.status(400).json({ message: 'Amalan sudah ada di grup ini' });
+      res.status(400).json({ message: 'Amalan sudah ada di halaqoh ini' });
     } else {
       res.status(500).json({ message: 'Gagal menambah aktivitas ke grup' });
     }
@@ -139,14 +131,14 @@ export const removeActivity = async (
     const group = await findGroup(groupId);
 
     if (!group) {
-      res.status(404).json({ message: 'Grup tidak ditemukan' });
+      res.status(404).json({ message: 'Halaqoh tidak ditemukan' });
       return;
     }
 
     if (!canManageGroup(group, req.user)) {
       res
         .status(403)
-        .json({ message: 'Hanya admin grup yang bisa menghapus aktivitas' });
+        .json({ message: 'Hanya murabbi halaqoh yang bisa menghapus aktivitas' });
       return;
     }
 
@@ -183,14 +175,14 @@ export const updateActivity = async (
     const group = await findGroup(groupId);
 
     if (!group) {
-      res.status(404).json({ message: 'Grup tidak ditemukan' });
+      res.status(404).json({ message: 'Halaqoh tidak ditemukan' });
       return;
     }
 
     if (!canManageGroup(group, req.user)) {
       res
         .status(403)
-        .json({ message: 'Hanya admin grup yang bisa mengupdate aktivitas' });
+        .json({ message: 'Hanya murabbi halaqoh yang bisa mengupdate aktivitas' });
       return;
     }
 
@@ -206,7 +198,7 @@ export const updateActivity = async (
       include: { activity: true },
     });
     if (!link) {
-      res.status(404).json({ message: 'Aktivitas tidak ada di grup ini' });
+      res.status(404).json({ message: 'Aktivitas tidak ada di halaqoh ini' });
       return;
     }
 

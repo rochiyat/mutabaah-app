@@ -6,7 +6,8 @@ const router = Router()
 
 router.use(authenticate)
 
-router.get('/', requireRole('superadmin', 'admin', 'murabbi'), userController.getUsers)
+// Izin pencarian dicek di controller (termasuk murabbi pendamping halaqoh)
+router.get('/', userController.getUsers)
 router.patch('/:id/role', requireRole('superadmin', 'admin'), userController.updateRole)
 router.patch('/:id/status', requireRole('superadmin', 'admin'), userController.updateStatus)
 
