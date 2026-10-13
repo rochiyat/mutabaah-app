@@ -17,14 +17,20 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  memberships         GroupMember[]
-  adminGroups         Group[]       @relation("GroupAdmin")
-  activities          Activity[]
-  records             Record[]
-  kajianCreated       Kajian[]      @relation("KajianCreator")
-  meetingsCreated     Meeting[]     @relation("MeetingCreator")
-  attendances         Attendance[]  @relation("AttendanceUser")
-  attendancesRecorded Attendance[]  @relation("AttendanceRecorder")
+  memberships            GroupMember[]
+  adminGroups            Group[]              @relation("GroupAdmin")
+  activities             Activity[]
+  records                Record[]
+  kajianCreated          Kajian[]             @relation("KajianCreator")
+  meetingsCreated        Meeting[]            @relation("MeetingCreator")
+  attendances            Attendance[]         @relation("AttendanceUser")
+  attendancesRecorded    Attendance[]         @relation("AttendanceRecorder")
+  financeAccountsCreated FinanceAccount[]     @relation("FinanceAccountCreator")
+  transactionsCreated    Transaction[]        @relation("TransactionCreator")
+  transactionsAsMember   Transaction[]        @relation("TransactionMember")
+  programsLed            Program[]            @relation("ProgramPic")
+  programsCreated        Program[]            @relation("ProgramCreator")
+  programParticipations  ProgramParticipant[]
 
   @@index([role])
 }
@@ -42,10 +48,12 @@ model Group {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  admin      User            @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Cascade)
-  members    GroupMember[]
-  activities GroupActivity[]
-  meetings   Meeting[]
+  admin           User             @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  members         GroupMember[]
+  activities      GroupActivity[]
+  meetings        Meeting[]
+  financeAccounts FinanceAccount[]
+  programs        Program[]
 
   @@index([adminId])
 }
@@ -178,4 +186,113 @@ model Attendance {
   @@unique([meetingId, userId])
   @@index([userId])
   @@index([recordedById])
+}
+
+// Kas: milik lembaga (groupId null) atau milik halaqoh
+model FinanceAccount {
+  id             Int      @id @default(autoincrement())
+  name           String
+  description    String?  @db.Text
+  groupId        Int?
+  openingBalance Decimal  @default(0) @db.Decimal(15, 2)
+  isActive       Boolean  @default(true)
+  createdById    Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  group        Group?        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  createdBy    User?         @relation("FinanceAccountCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  transactions Transaction[]
+  duesPlans    DuesPlan[]
+
+  @@index([groupId])
+  @@index([createdById])
+}
+
+// Transaksi kas. type: masuk | keluar
+model Transaction {
+  id          Int      @id @default(autoincrement())
+  accountId   Int
+  type        String
+  category    String
+  amount      Decimal  @db.Decimal(15, 2)
+  date        DateTime @db.Date
+  description String?
+  memberId    Int? // anggota pembayar (infaq/iuran) atau penerima
+  programId   Int?
+  duesPlanId  Int?
+  duesPeriod  String? // "yyyy-MM" untuk pembayaran iuran
+  createdById Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  account   FinanceAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  member    User?          @relation("TransactionMember", fields: [memberId], references: [id], onDelete: SetNull)
+  program   Program?       @relation(fields: [programId], references: [id], onDelete: SetNull)
+  duesPlan  DuesPlan?      @relation(fields: [duesPlanId], references: [id], onDelete: SetNull)
+  createdBy User?          @relation("TransactionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([accountId, date])
+  @@index([memberId])
+  @@index([programId])
+  @@index([duesPlanId, duesPeriod])
+  @@index([createdById])
+}
+
+// Iuran rutin bulanan pada sebuah kas
+model DuesPlan {
+  id        Int      @id @default(autoincrement())
+  accountId Int
+  name      String
+  amount    Decimal  @db.Decimal(15, 2)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account      FinanceAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+
+  @@index([accountId])
+}
+
+// Program kerja lembaga atau halaqoh. status: rencana | berjalan | selesai | batal
+model Program {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?   @db.Text
+  groupId     Int?
+  status      String    @default("rencana")
+  startDate   DateTime? @db.Date
+  endDate     DateTime? @db.Date
+  location    String?
+  budget      Decimal?  @db.Decimal(15, 2)
+  picId       Int?
+  createdById Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  group        Group?               @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  pic          User?                @relation("ProgramPic", fields: [picId], references: [id], onDelete: SetNull)
+  createdBy    User?                @relation("ProgramCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  participants ProgramParticipant[]
+  transactions Transaction[]
+
+  @@index([groupId])
+  @@index([picId])
+  @@index([createdById])
+}
+
+// role: panitia | peserta
+model ProgramParticipant {
+  id        Int      @id @default(autoincrement())
+  programId Int
+  userId    Int
+  role      String   @default("peserta")
+  joinedAt  DateTime @default(now())
+
+  program Program @relation(fields: [programId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([programId, userId])
+  @@index([userId])
 }

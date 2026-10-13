@@ -12,6 +12,8 @@ import userRoutes from './routes/users';
 import kajianRoutes from './routes/kajian';
 import meetingRoutes from './routes/meetings';
 import reportRoutes from './routes/reports';
+import financeRoutes from './routes/finance';
+import programRoutes from './routes/programs';
 import { errorHandler } from './middleware/errorHandler';
 import { assertJwtSecret } from './utils/jwt';
 
@@ -36,6 +38,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/kajian', kajianRoutes);
 app.use('/api/meetings', meetingRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/finance', financeRoutes);
+app.use('/api/programs', programRoutes);
 
 // Endpoint API yang tidak dikenal jangan jatuh ke SPA fallback
 app.use('/api', (_req, res) => {

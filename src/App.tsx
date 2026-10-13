@@ -20,6 +20,10 @@ import { KajianDetailPage } from '@/pages/KajianDetailPage';
 import { MeetingDetailPage } from '@/pages/MeetingDetailPage';
 import { ReportsPage } from '@/pages/ReportsPage';
 import { MemberReportPage } from '@/pages/MemberReportPage';
+import { FinancePage } from '@/pages/FinancePage';
+import { FinanceAccountPage } from '@/pages/FinanceAccountPage';
+import { ProgramsPage } from '@/pages/ProgramsPage';
+import { ProgramDetailPage } from '@/pages/ProgramDetailPage';
 import type { Role } from '@/types';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -142,6 +146,38 @@ const AppContent: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <MemberReportPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/keuangan"
+              element={
+                <ProtectedRoute>
+                  <FinancePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/keuangan/:id"
+              element={
+                <ProtectedRoute>
+                  <FinanceAccountPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/program"
+              element={
+                <ProtectedRoute>
+                  <ProgramsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/program/:id"
+              element={
+                <ProtectedRoute>
+                  <ProgramDetailPage />
                 </ProtectedRoute>
               }
             />

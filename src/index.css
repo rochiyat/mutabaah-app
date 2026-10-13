@@ -576,6 +576,7 @@ label.checkbox {
 }
 
 .inline-form select,
+.inline-form input,
 .table select,
 .search-input,
 .user-picker input {
@@ -921,6 +922,129 @@ label.checkbox {
   print-color-adjust: exact;
 }
 
+/* Keuangan & program */
+.money-big {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #1e8449;
+}
+
+.money-big.negative {
+  color: #c0392b;
+}
+
+.balance-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.stats-grid.money-cards {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 1rem 0;
+}
+
+.money-cards strong {
+  font-size: 1.15rem;
+}
+
+.count-card.money-in {
+  border-top-color: #27ae60;
+}
+
+.count-card.money-out {
+  border-top-color: #c0392b;
+}
+
+.money-in-text {
+  color: #1e8449;
+}
+
+.money-out-text {
+  color: #c0392b;
+}
+
+.table .num,
+.table th.num {
+  text-align: right;
+}
+
+.report-table td.wrap {
+  white-space: normal;
+  min-width: 180px;
+}
+
+.category-breakdown {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.chip {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  background: #eaeded;
+  color: #2c3e50;
+}
+
+.chip-in {
+  background: #d5f5e3;
+  color: #1e8449;
+}
+
+.chip-out {
+  background: #fadbd8;
+  color: #922b21;
+}
+
+.type-toggle button.selected.type-in {
+  background: #27ae60;
+}
+
+.type-toggle button.selected.type-out {
+  background: #c0392b;
+}
+
+.dues-matrix td.clickable {
+  cursor: pointer;
+}
+
+.dues-matrix td.clickable:hover {
+  outline: 2px solid #3498db;
+  outline-offset: -2px;
+}
+
+.no-margin {
+  margin: 0 !important;
+}
+
+.budget-bar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.budget-bar .progress {
+  flex: 1;
+  max-width: 420px;
+}
+
+.status-badge-rencana { background: #eaeded; color: #566573; }
+.status-badge-berjalan { background: #d6eaf8; color: #1f618d; }
+.status-badge-selesai { background: #d5f5e3; color: #1e8449; }
+.status-badge-batal { background: #fadbd8; color: #922b21; }
+
+.activity-card.program-berjalan { border-left-color: #2980b9; }
+.activity-card.program-selesai { border-left-color: #27ae60; }
+.activity-card.program-batal { border-left-color: #c0392b; opacity: 0.7; }
+.activity-card.program-rencana { border-left-color: #95a5a6; }
+
 .print-only {
   display: none;
 }
@@ -973,6 +1097,14 @@ label.checkbox {
 }
 
 @media (max-width: 768px) {
+  .stats-grid.money-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .balance-box {
+    align-items: flex-start;
+  }
+
   .stats-grid.report-cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }

@@ -1,4 +1,4 @@
-export type Role = 'superadmin' | 'admin' | 'murabbi' | 'user';
+export type Role = 'superadmin' | 'admin' | 'bendahara' | 'murabbi' | 'user';
 
 export interface User {
   id: number;
@@ -286,4 +286,151 @@ export interface UserMutabaahReport {
   })[];
   days: { date: string; values: Record<number, number> }[];
   summary: { percent: number | null; daysFilled: number };
+}
+
+// ===== Keuangan =====
+
+export type TransactionType = 'masuk' | 'keluar';
+
+export interface MoneyTotals {
+  masuk: number;
+  keluar: number;
+}
+
+export interface DuesPlan {
+  id: number;
+  accountId: number;
+  name: string;
+  amount: number;
+  isActive: boolean;
+}
+
+export interface FinanceAccount {
+  id: number;
+  name: string;
+  description?: string | null;
+  groupId?: number | null;
+  group: { id: number; name: string } | null;
+  openingBalance: number;
+  isActive: boolean;
+  totals: MoneyTotals;
+  balance: number;
+  canManage: boolean;
+  duesPlans?: DuesPlan[];
+}
+
+export interface FinanceAccountInput {
+  name?: string;
+  description?: string | null;
+  groupId?: number | null;
+  openingBalance?: number;
+  isActive?: boolean;
+}
+
+export interface Transaction {
+  id: number;
+  accountId: number;
+  type: TransactionType;
+  category: string;
+  amount: number;
+  date: string;
+  description?: string | null;
+  memberId?: number | null;
+  programId?: number | null;
+  duesPlanId?: number | null;
+  duesPeriod?: string | null;
+  member?: { id: number; name: string } | null;
+  program?: { id: number; name: string } | null;
+  createdBy?: { id: number; name: string } | null;
+  account?: { id: number; name: string };
+}
+
+export interface TransactionInput {
+  type: TransactionType;
+  category: string;
+  amount: number;
+  date: string;
+  description?: string | null;
+  memberId?: number | null;
+  programId?: number | null;
+}
+
+export interface TransactionList {
+  period: { start: string; end: string };
+  summary: {
+    openingForPeriod: number;
+    masuk: number;
+    keluar: number;
+    closing: number;
+    byCategory: { type: TransactionType; category: string; total: number; count: number }[];
+  };
+  transactions: Transaction[];
+}
+
+export interface DuesStatus {
+  plan: DuesPlan;
+  year: number;
+  months: string[];
+  members: {
+    userId: number;
+    name: string;
+    isMember: boolean;
+    perMonth: Record<string, number>;
+    paidMonths: number;
+    total: number;
+  }[];
+  totals: { collected: number; perMonth: Record<string, number> };
+  canManage: boolean;
+}
+
+// ===== Program =====
+
+export type ProgramStatus = 'rencana' | 'berjalan' | 'selesai' | 'batal';
+export type ProgramParticipantRole = 'panitia' | 'peserta';
+
+export interface Program {
+  id: number;
+  name: string;
+  description?: string | null;
+  groupId?: number | null;
+  group: { id: number; name: string } | null;
+  status: ProgramStatus;
+  startDate?: string | null;
+  endDate?: string | null;
+  location?: string | null;
+  budget?: number | null;
+  picId?: number | null;
+  pic?: { id: number; name: string; email?: string } | null;
+  participantCount?: number;
+  myRole?: ProgramParticipantRole | null;
+  canManage: boolean;
+}
+
+export interface ProgramInput {
+  name?: string;
+  description?: string | null;
+  groupId?: number | null;
+  status?: ProgramStatus;
+  startDate?: string | null;
+  endDate?: string | null;
+  location?: string | null;
+  budget?: number | null;
+  picId?: number | null;
+}
+
+export interface ProgramParticipant {
+  id: number;
+  programId: number;
+  userId: number;
+  role: ProgramParticipantRole;
+  joinedAt: string;
+  user: { id: number; name: string; email: string };
+}
+
+export interface ProgramDetail extends Program {
+  createdBy?: { id: number; name: string } | null;
+  participants: ProgramParticipant[];
+  finance: MoneyTotals & { budget: number | null; realization: number };
+  transactions: Transaction[];
+  myParticipation: ProgramParticipant | null;
 }

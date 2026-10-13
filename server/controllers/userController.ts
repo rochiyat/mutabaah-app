@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { prisma } from '../utils/prisma'
-import { canCreateGroup, isRole } from '../utils/roles'
+import { canCreateGroup, isFinanceManager, isRole } from '../utils/roles'
 
 const userSelect = {
   id: true,
@@ -14,9 +14,10 @@ const userSelect = {
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Pengurus & murabbi, atau user yang menjadi murabbi di salah satu halaqoh
+    // Pengurus, bendahara & murabbi, atau user yang menjadi murabbi di salah satu halaqoh
     const allowed =
       canCreateGroup(req.user!.role) ||
+      isFinanceManager(req.user!.role) ||
       (await prisma.groupMember.count({
         where: { userId: req.user!.userId, role: 'murabbi' },
       })) > 0

@@ -1,4 +1,4 @@
-export const ROLES = ['superadmin', 'admin', 'murabbi', 'user'] as const
+export const ROLES = ['superadmin', 'admin', 'bendahara', 'murabbi', 'user'] as const
 
 export type Role = (typeof ROLES)[number]
 
@@ -54,3 +54,13 @@ export const canManageKajian = (
 export const ATTENDANCE_STATUSES = ['hadir', 'izin', 'sakit', 'alpa'] as const
 
 export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number]
+
+// Keuangan lembaga: superadmin, admin, dan bendahara
+export const isFinanceManager = (role: string): boolean =>
+  isManager(role) || role === 'bendahara'
+
+export const TRANSACTION_TYPES = ['masuk', 'keluar'] as const
+
+export const PROGRAM_STATUSES = ['rencana', 'berjalan', 'selesai', 'batal'] as const
+
+export const PROGRAM_PARTICIPANT_ROLES = ['panitia', 'peserta'] as const

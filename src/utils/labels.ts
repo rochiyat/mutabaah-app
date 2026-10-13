@@ -1,8 +1,9 @@
-import type { AttendanceStatus, GroupMemberRole, Role } from '@/types'
+import type { AttendanceStatus, GroupMemberRole, ProgramStatus, Role } from '@/types'
 
 export const ROLE_LABELS: Record<Role, string> = {
   superadmin: 'Superadmin',
   admin: 'Admin (Pengurus)',
+  bendahara: 'Bendahara',
   murabbi: 'Murabbi',
   user: 'Anggota',
 }
@@ -48,3 +49,29 @@ export const todayKey = (): string => {
   const pad = (n: number) => String(n).padStart(2, '0')
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
+
+export const isFinanceManagerRole = (role?: Role): boolean =>
+  isManagerRole(role) || role === 'bendahara'
+
+const moneyFormatter = new Intl.NumberFormat('id-ID', {
+  style: 'currency',
+  currency: 'IDR',
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+})
+
+export const formatMoney = (value: number): string => moneyFormatter.format(value)
+
+export const TRANSACTION_CATEGORIES = {
+  masuk: ['infaq', 'iuran', 'donasi', 'zakat', 'lainnya'],
+  keluar: ['operasional', 'konsumsi', 'program', 'sosial', 'transport', 'lainnya'],
+} as const
+
+export const PROGRAM_STATUS_LABELS: Record<ProgramStatus, string> = {
+  rencana: 'Rencana',
+  berjalan: 'Berjalan',
+  selesai: 'Selesai',
+  batal: 'Batal',
+}
+
+export const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']

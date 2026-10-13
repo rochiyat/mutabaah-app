@@ -4,7 +4,7 @@ import { Response } from 'express'
 export type SheetSpec = {
   name: string
   title?: string[] // baris judul di atas tabel
-  columns: { header: string; key: string; width?: number; percent?: boolean }[]
+  columns: { header: string; key: string; width?: number; percent?: boolean; money?: boolean }[]
   rows: Record<string, string | number | null>[]
 }
 
@@ -51,6 +51,7 @@ export const sendWorkbook = async (
           cell.numFmt = '0.0%'
         } else {
           cell.value = value ?? ''
+          if (col.money && typeof value === 'number') cell.numFmt = '#,##0'
         }
       })
     })

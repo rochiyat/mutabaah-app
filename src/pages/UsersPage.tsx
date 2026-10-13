@@ -4,7 +4,7 @@ import { userAPI } from '@/services/api'
 import { useAuth } from '@/hooks/useAuth'
 import { ROLE_LABELS, getErrorMessage } from '@/utils/labels'
 
-const ALL_ROLES: Role[] = ['user', 'murabbi', 'admin', 'superadmin']
+const ALL_ROLES: Role[] = ['user', 'murabbi', 'bendahara', 'admin', 'superadmin']
 
 export const UsersPage: React.FC = () => {
   const { user: me } = useAuth()
