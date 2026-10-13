@@ -651,7 +651,98 @@ label.checkbox {
   cursor: pointer;
 }
 
+/* Absensi */
+.success {
+  color: #1e8449;
+  margin: 0.5rem 0;
+  padding: 0.5rem;
+  background-color: #d5f5e3;
+  border-radius: 4px;
+}
+
+.stats-grid.attendance-counts {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.count-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem;
+  border-radius: 8px;
+  background: #f4f6f7;
+  border-top: 4px solid #bdc3c7;
+  color: #2c3e50;
+}
+
+.count-card strong {
+  font-size: 1.5rem;
+}
+
+.status-hadir { --status-color: #27ae60; }
+.status-izin { --status-color: #2980b9; }
+.status-sakit { --status-color: #e67e22; }
+.status-alpa { --status-color: #c0392b; }
+
+.count-card[class*='status-'] {
+  border-top-color: var(--status-color);
+}
+
+.status {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: white;
+  background: var(--status-color);
+}
+
+.status-picker {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.status-option {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.85rem;
+  border: 1px solid var(--status-color);
+  color: var(--status-color);
+  background: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.status-option.selected {
+  background: var(--status-color);
+  color: white;
+}
+
+.note-input {
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  width: 100%;
+  min-width: 120px;
+}
+
+.table a {
+  color: #2980b9;
+  text-decoration: none;
+}
+
+.table a:hover {
+  text-decoration: underline;
+}
+
 @media (max-width: 768px) {
+  .stats-grid.attendance-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .activity-form.form-grid {
     grid-template-columns: 1fr;
   }

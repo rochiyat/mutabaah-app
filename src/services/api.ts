@@ -12,6 +12,14 @@ import type {
   AuthResponse,
   ApiError,
   Role,
+  Attendance,
+  AttendanceStatus,
+  Kajian,
+  KajianDetail,
+  KajianInput,
+  Meeting,
+  MeetingDetail,
+  MeetingInput,
 } from '@/types';
 
 const api: AxiosInstance = axios.create({
@@ -104,6 +112,33 @@ export const groupAPI = {
     api.patch<GroupMember>(`/groups/${groupId}/members/${userId}`, { role }),
   removeMember: (groupId: number, userId: number) =>
     api.delete(`/groups/${groupId}/members/${userId}`),
+  getMeetings: (groupId: number) => api.get<Meeting[]>(`/groups/${groupId}/meetings`),
+  createMeeting: (groupId: number, data: MeetingInput) =>
+    api.post<Meeting>(`/groups/${groupId}/meetings`, data),
+};
+
+export const kajianAPI = {
+  getList: () => api.get<Kajian[]>('/kajian'),
+  getById: (id: number) => api.get<KajianDetail>(`/kajian/${id}`),
+  create: (data: KajianInput) => api.post<Kajian>('/kajian', data),
+  update: (id: number, data: KajianInput) => api.patch<Kajian>(`/kajian/${id}`, data),
+  remove: (id: number) => api.delete(`/kajian/${id}`),
+  createMeeting: (id: number, data: MeetingInput) =>
+    api.post<Meeting>(`/kajian/${id}/meetings`, data),
+};
+
+export const meetingAPI = {
+  getById: (id: number) => api.get<MeetingDetail>(`/meetings/${id}`),
+  update: (id: number, data: Partial<MeetingInput>) =>
+    api.patch<Meeting>(`/meetings/${id}`, data),
+  remove: (id: number) => api.delete(`/meetings/${id}`),
+  saveAttendance: (
+    id: number,
+    entries: { userId: number; status: AttendanceStatus; note?: string | null }[]
+  ) => api.put(`/meetings/${id}/attendance`, { entries }),
+  removeAttendance: (id: number, userId: number) =>
+    api.delete(`/meetings/${id}/attendance/${userId}`),
+  checkIn: (id: number) => api.post<Attendance>(`/meetings/${id}/check-in`),
 };
 
 export const groupActivityAPI = {

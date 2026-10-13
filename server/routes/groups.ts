@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as groupController from '../controllers/groupController';
 import * as groupActivityController from '../controllers/groupActivityController';
+import * as meetingController from '../controllers/meetingController';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
@@ -31,5 +32,9 @@ router.delete(
   '/:groupId/activities/:activityId',
   groupActivityController.removeActivity
 );
+
+// Pertemuan halaqoh (detail, absensi: lihat /api/meetings)
+router.get('/:groupId/meetings', meetingController.getGroupMeetings);
+router.post('/:groupId/meetings', meetingController.createGroupMeeting);
 
 export default router;

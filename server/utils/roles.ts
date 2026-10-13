@@ -42,3 +42,15 @@ export const canViewGroup = (
   group: GroupWithMembers,
   user: { userId: number; role: string }
 ): boolean => isGroupMember(group, user.userId) || canManageGroup(group, user)
+
+// Kajian rutin: dibuat oleh pengurus atau murabbi, dikelola pembuatnya atau pengurus
+export const canCreateKajian = canCreateGroup
+
+export const canManageKajian = (
+  kajian: { createdById: number | null },
+  user: { userId: number; role: string }
+): boolean => kajian.createdById === user.userId || isManager(user.role)
+
+export const ATTENDANCE_STATUSES = ['hadir', 'izin', 'sakit', 'alpa'] as const
+
+export type AttendanceStatus = (typeof ATTENDANCE_STATUSES)[number]

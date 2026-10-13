@@ -173,6 +173,21 @@ mutabaah-app/
 - `GET|POST /api/groups/:groupId/activities` - POST takes `{ activityId }` or `{ name, category, target, unit }` for a new group activity
 - `PATCH|DELETE /api/groups/:groupId/activities/:activityId`
 
+### Meetings & attendance
+A meeting (`Meeting`) belongs to either a halaqoh or a kajian. Attendance status is `hadir`, `izin`, `sakit`, or `alpa`.
+- `GET|POST /api/groups/:groupId/meetings` - halaqoh meetings (POST: murabbi of the halaqoh)
+- `GET|PATCH|DELETE /api/meetings/:id` - detail includes counts, the halaqoh roster, `myAttendance`, `canManage`, `canCheckIn`
+- `PUT /api/meetings/:id/attendance` - `{ entries: [{ userId, status, note? }] }`, saves many at once (managers only)
+- `DELETE /api/meetings/:id/attendance/:userId`
+- `POST /api/meetings/:id/check-in` - self check-in as `hadir`, only on the meeting date (halaqoh members, or anyone for an active kajian)
+
+### Kajian (regular study circles, open to all users)
+- `GET|POST /api/kajian` - POST: murabbi, admin, superadmin
+- `GET|PATCH|DELETE /api/kajian/:id` - managed by its creator or admin/superadmin
+- `POST /api/kajian/:id/meetings` - add a session; speaker and location default to the kajian's
+
+Kajian participants only see attendance counts and their own status; the full list is visible to the kajian's managers.
+
 ### Users (superadmin/admin; murabbi and halaqoh murabbi members can list)
 - `GET /api/users?search=` - List users
 - `PATCH /api/users/:id/role` - `{ role }`

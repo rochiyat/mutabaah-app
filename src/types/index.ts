@@ -128,3 +128,81 @@ export interface DashboardSummary {
   streak: number;
   totalActivities: number;
 }
+
+export type AttendanceStatus = 'hadir' | 'izin' | 'sakit' | 'alpa';
+
+export type AttendanceCounts = Record<AttendanceStatus, number>;
+
+export interface MeetingInput {
+  date: string; // yyyy-MM-dd
+  startTime?: string | null;
+  topic: string;
+  speaker?: string | null;
+  location?: string | null;
+  notes?: string | null;
+}
+
+export interface Meeting extends MeetingInput {
+  id: number;
+  groupId?: number | null;
+  kajianId?: number | null;
+  createdById?: number | null;
+  createdAt: string;
+  updatedAt: string;
+  counts?: AttendanceCounts;
+}
+
+export interface Attendance {
+  id: number;
+  meetingId: number;
+  userId: number;
+  status: AttendanceStatus;
+  note?: string | null;
+  recordedById?: number | null;
+  user?: PublicUser;
+}
+
+export interface RosterEntry {
+  user: PublicUser;
+  memberRole: GroupMemberRole | null;
+  attendance: Attendance | null;
+}
+
+export interface MeetingDetail extends Meeting {
+  group: { id: number; name: string } | null;
+  kajian: { id: number; title: string } | null;
+  attendances: Attendance[];
+  roster: RosterEntry[];
+  counts: AttendanceCounts;
+  myAttendance: Attendance | null;
+  canManage: boolean;
+  canCheckIn: boolean;
+}
+
+export interface KajianInput {
+  title?: string;
+  speaker?: string | null;
+  schedule?: string | null;
+  location?: string | null;
+  description?: string | null;
+  isActive?: boolean;
+}
+
+export interface Kajian {
+  id: number;
+  title: string;
+  speaker?: string | null;
+  schedule?: string | null;
+  location?: string | null;
+  description?: string | null;
+  isActive: boolean;
+  createdById?: number | null;
+  createdBy?: { id: number; name: string } | null;
+  canManage: boolean;
+  meetingCount?: number;
+  lastMeeting?: { date: string; topic: string } | null;
+}
+
+export interface KajianDetail extends Kajian {
+  meetings: Meeting[];
+}

@@ -15,6 +15,9 @@ import { StatsPage } from '@/pages/StatsPage';
 import { HalaqohListPage } from '@/pages/HalaqohListPage';
 import { HalaqohDetailPage } from '@/pages/HalaqohDetailPage';
 import { UsersPage } from '@/pages/UsersPage';
+import { KajianListPage } from '@/pages/KajianListPage';
+import { KajianDetailPage } from '@/pages/KajianDetailPage';
+import { MeetingDetailPage } from '@/pages/MeetingDetailPage';
 import type { Role } from '@/types';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -97,6 +100,30 @@ const AppContent: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <HalaqohDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/kajian"
+              element={
+                <ProtectedRoute>
+                  <KajianListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/kajian/:id"
+              element={
+                <ProtectedRoute>
+                  <KajianDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pertemuan/:id"
+              element={
+                <ProtectedRoute>
+                  <MeetingDetailPage />
                 </ProtectedRoute>
               }
             />

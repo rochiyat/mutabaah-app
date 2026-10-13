@@ -1,10 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import type { GroupDetail, GroupInput, GroupMemberRole, User } from '@/types'
+import type {
+  GroupDetail,
+  GroupInput,
+  GroupMemberRole,
+  Meeting,
+  MeetingInput,
+  User,
+} from '@/types'
 import { groupAPI, groupActivityAPI } from '@/services/api'
 import { useAuth } from '@/hooks/useAuth'
 import { GroupForm } from '@/components/halaqoh/GroupForm'
 import { UserPicker } from '@/components/users/UserPicker'
+import { MeetingForm } from '@/components/meetings/MeetingForm'
+import { MeetingList } from '@/components/meetings/MeetingList'
 import { MEMBER_ROLE_LABELS, getErrorMessage, isManagerRole } from '@/utils/labels'
 
 export const HalaqohDetailPage: React.FC = () => {
@@ -17,6 +26,8 @@ export const HalaqohDetailPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [isEditing, setIsEditing] = useState(false)
+  const [meetings, setMeetings] = useState<Meeting[]>([])
+  const [showMeetingForm, setShowMeetingForm] = useState(false)
 
   const [newMember, setNewMember] = useState<User | null>(null)
   const [newMemberRole, setNewMemberRole] = useState<GroupMemberRole>('mutarabbi')
@@ -29,8 +40,12 @@ export const HalaqohDetailPage: React.FC = () => {
 
   const load = useCallback(async () => {
     try {
-      const response = await groupAPI.getGroupById(groupId)
+      const [response, meetingsResponse] = await Promise.all([
+        groupAPI.getGroupById(groupId),
+        groupAPI.getMeetings(groupId),
+      ])
       setGroup(response.data)
+      setMeetings(meetingsResponse.data)
       setError('')
     } catch (err) {
       setError(getErrorMessage(err, 'Gagal memuat halaqoh'))
@@ -93,6 +108,11 @@ export const HalaqohDetailPage: React.FC = () => {
     } catch (err) {
       setError(getErrorMessage(err, 'Gagal keluar dari halaqoh'))
     }
+  }
+
+  const handleCreateMeeting = async (data: MeetingInput) => {
+    const response = await groupAPI.createMeeting(group.id, data)
+    navigate(`/pertemuan/${response.data.id}`)
   }
 
   const handleAddActivity = (e: React.FormEvent) => {
@@ -191,6 +211,26 @@ export const HalaqohDetailPage: React.FC = () => {
             </select>
           </div>
         )}
+      </section>
+
+      <section className="activity-list section">
+        <div className="page-header">
+          <h2>Pertemuan ({meetings.length})</h2>
+          {group.canManage && (
+            <button className="btn-primary" onClick={() => setShowMeetingForm(!showMeetingForm)}>
+              {showMeetingForm ? 'Batal' : 'Tambah Pertemuan'}
+            </button>
+          )}
+        </div>
+        {showMeetingForm && (
+          <MeetingForm
+            defaults={{ location: group.location }}
+            submitLabel="Buat Pertemuan"
+            onSubmit={handleCreateMeeting}
+            onCancel={() => setShowMeetingForm(false)}
+          />
+        )}
+        <MeetingList meetings={meetings} expected={group.members.length} />
       </section>
 
       <section className="activity-list section">

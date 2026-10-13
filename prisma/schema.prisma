@@ -17,10 +17,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  memberships GroupMember[]
-  adminGroups Group[]       @relation("GroupAdmin")
-  activities  Activity[]
-  records     Record[]
+  memberships         GroupMember[]
+  adminGroups         Group[]       @relation("GroupAdmin")
+  activities          Activity[]
+  records             Record[]
+  kajianCreated       Kajian[]      @relation("KajianCreator")
+  meetingsCreated     Meeting[]     @relation("MeetingCreator")
+  attendances         Attendance[]  @relation("AttendanceUser")
+  attendancesRecorded Attendance[]  @relation("AttendanceRecorder")
 
   @@index([role])
 }
@@ -41,6 +45,7 @@ model Group {
   admin      User            @relation("GroupAdmin", fields: [adminId], references: [id], onDelete: Cascade)
   members    GroupMember[]
   activities GroupActivity[]
+  meetings   Meeting[]
 
   @@index([adminId])
 }
@@ -109,4 +114,68 @@ model Record {
 
   @@unique([activityId, date, userId])
   @@index([userId, date])
+}
+
+// Kajian rutin lembaga (terbuka untuk semua anggota)
+model Kajian {
+  id          Int      @id @default(autoincrement())
+  title       String
+  speaker     String? // ustadz / pemateri tetap
+  description String?  @db.Text
+  schedule    String? // mis. "Setiap Kamis ba'da Maghrib"
+  location    String?
+  isActive    Boolean  @default(true)
+  createdById Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User?     @relation("KajianCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  meetings  Meeting[]
+
+  @@index([createdById])
+}
+
+// Satu sesi pertemuan, milik halaqoh (groupId) ATAU kajian (kajianId)
+model Meeting {
+  id          Int      @id @default(autoincrement())
+  groupId     Int?
+  kajianId    Int?
+  date        DateTime @db.Date
+  startTime   String? // "HH:mm"
+  topic       String // materi / tema
+  speaker     String? // pemateri sesi ini
+  location    String?
+  notes       String?  @db.Text
+  createdById Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  group       Group?       @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  kajian      Kajian?      @relation(fields: [kajianId], references: [id], onDelete: Cascade)
+  createdBy   User?        @relation("MeetingCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  attendances Attendance[]
+
+  @@index([groupId, date])
+  @@index([kajianId, date])
+  @@index([createdById])
+}
+
+// Kehadiran. status: hadir | izin | sakit | alpa
+model Attendance {
+  id           Int      @id @default(autoincrement())
+  meetingId    Int
+  userId       Int
+  status       String
+  note         String?
+  recordedById Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  meeting    Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  user       User    @relation("AttendanceUser", fields: [userId], references: [id], onDelete: Cascade)
+  recordedBy User?   @relation("AttendanceRecorder", fields: [recordedById], references: [id], onDelete: SetNull)
+
+  @@unique([meetingId, userId])
+  @@index([userId])
+  @@index([recordedById])
 }
