@@ -1,28 +1,57 @@
 import { Request, Response, NextFunction } from 'express'
-import jwt from 'jsonwebtoken'
-import { JWTPayload } from '../types'
+import { prisma } from '../utils/prisma'
+import { verifyToken } from '../utils/jwt'
+import { Role } from '../utils/roles'
 
-export const authenticate = (
+export const authenticate = async (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
+): Promise<void> => {
+  const token = req.headers.authorization?.split(' ')[1]
+
+  if (!token) {
+    res.status(401).json({ message: 'Token tidak ditemukan' })
+    return
+  }
+
+  let decoded
   try {
-    const token = req.headers.authorization?.split(' ')[1]
-    
-    if (!token) {
-      res.status(401).json({ message: 'Token tidak ditemukan' })
+    decoded = verifyToken(token)
+  } catch (error) {
+    res.status(401).json({ message: 'Token tidak valid' })
+    return
+  }
+
+  try {
+    // Ambil role & status terbaru dari DB supaya perubahan role/nonaktif langsung berlaku
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: { id: true, email: true, role: true, isActive: true },
+    })
+
+    if (!user || !user.isActive) {
+      res.status(401).json({ message: 'Akun tidak aktif atau tidak ditemukan' })
       return
     }
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'your-secret-key'
-    ) as JWTPayload
-
-    req.user = decoded
+    req.user = { userId: user.id, email: user.email, role: user.role }
     next()
   } catch (error) {
-    res.status(401).json({ message: 'Token tidak valid' })
+    next(error)
   }
 }
+
+export const requireRole =
+  (...roles: Role[]) =>
+  (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      res.status(401).json({ message: 'Tidak autentik' })
+      return
+    }
+    if (!(roles as string[]).includes(req.user.role)) {
+      res.status(403).json({ message: 'Akses ditolak' })
+      return
+    }
+    next()
+  }

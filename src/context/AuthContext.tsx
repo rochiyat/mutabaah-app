@@ -21,12 +21,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const storedToken = localStorage.getItem('token')
     const storedUser = localStorage.getItem('user')
     
-    if (storedToken && storedUser) {
-      setToken(storedToken)
-      setUser(JSON.parse(storedUser))
+    if (!storedToken || !storedUser) {
+      setIsLoading(false)
+      return
     }
-    
-    setIsLoading(false)
+
+    setToken(storedToken)
+    setUser(JSON.parse(storedUser))
+
+    // Segarkan data user (role bisa berubah sejak login terakhir)
+    import('@/services/api')
+      .then(({ authAPI }) => authAPI.getCurrentUser())
+      .then((response) => {
+        setUser(response.data)
+        localStorage.setItem('user', JSON.stringify(response.data))
+      })
+      .catch(() => {
+        // Token tidak valid ditangani interceptor (redirect ke login)
+      })
+      .finally(() => setIsLoading(false))
   }, [])
 
   const login = async (email: string, password: string) => {

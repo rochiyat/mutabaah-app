@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { CreateActivityDTO, UpdateActivityDTO } from '../types';
+import { getUserActivities } from '../utils/activityAccess';
 
 export const getActivities = async (
   req: Request,
@@ -12,33 +13,7 @@ export const getActivities = async (
       return;
     }
 
-    // Get personal activities
-    const personalActivities = await prisma.activity.findMany({
-      where: { userId: req.user.userId },
-      include: { records: true },
-      orderBy: { createdAt: 'desc' },
-    });
-
-    // Get user's group
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
-      include: { group: true },
-    });
-
-    let groupActivities: any[] = [];
-    if (user?.group) {
-      const groupActivityRecords = await prisma.groupActivity.findMany({
-        where: { groupId: user.group.id },
-        include: { activity: { include: { records: true } } },
-      });
-      groupActivities = groupActivityRecords.map((ga) => ({
-        ...ga.activity,
-        isGroupActivity: true,
-        isRequired: ga.isRequired,
-      }));
-    }
-
-    const allActivities = [...personalActivities, ...groupActivities];
+    const allActivities = await getUserActivities(req.user.userId);
     res.json(allActivities);
   } catch (error) {
     res.status(500).json({ message: 'Gagal mengambil aktivitas' });

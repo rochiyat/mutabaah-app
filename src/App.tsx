@@ -12,12 +12,26 @@ import { HomePage } from '@/pages/HomePage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ActivitiesPage } from '@/pages/ActivitiesPage';
 import { StatsPage } from '@/pages/StatsPage';
+import { HalaqohListPage } from '@/pages/HalaqohListPage';
+import { HalaqohDetailPage } from '@/pages/HalaqohDetailPage';
+import { UsersPage } from '@/pages/UsersPage';
+import { KajianListPage } from '@/pages/KajianListPage';
+import { KajianDetailPage } from '@/pages/KajianDetailPage';
+import { MeetingDetailPage } from '@/pages/MeetingDetailPage';
+import { ReportsPage } from '@/pages/ReportsPage';
+import { MemberReportPage } from '@/pages/MemberReportPage';
+import { FinancePage } from '@/pages/FinancePage';
+import { FinanceAccountPage } from '@/pages/FinanceAccountPage';
+import { ProgramsPage } from '@/pages/ProgramsPage';
+import { ProgramDetailPage } from '@/pages/ProgramDetailPage';
+import type { Role } from '@/types';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+const ProtectedRoute: React.FC<{
+  children: React.ReactNode;
+  roles?: Role[];
+}> = ({ children, roles }) => {
   const context = React.useContext(AuthContext);
 
   if (!context) {
@@ -30,7 +44,15 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({
     return <div>Loading...</div>;
   }
 
-  return user ? <>{children}</> : <Navigate to="/login" />;
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/dashboard" />;
+  }
+
+  return <>{children}</>;
 };
 
 const AppContent: React.FC = () => {
@@ -68,6 +90,102 @@ const AppContent: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <StatsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/halaqoh"
+              element={
+                <ProtectedRoute>
+                  <HalaqohListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/halaqoh/:id"
+              element={
+                <ProtectedRoute>
+                  <HalaqohDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/kajian"
+              element={
+                <ProtectedRoute>
+                  <KajianListPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/kajian/:id"
+              element={
+                <ProtectedRoute>
+                  <KajianDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/pertemuan/:id"
+              element={
+                <ProtectedRoute>
+                  <MeetingDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/laporan"
+              element={
+                <ProtectedRoute>
+                  <ReportsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/laporan/anggota/:userId"
+              element={
+                <ProtectedRoute>
+                  <MemberReportPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/keuangan"
+              element={
+                <ProtectedRoute>
+                  <FinancePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/keuangan/:id"
+              element={
+                <ProtectedRoute>
+                  <FinanceAccountPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/program"
+              element={
+                <ProtectedRoute>
+                  <ProgramsPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/program/:id"
+              element={
+                <ProtectedRoute>
+                  <ProgramDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/users"
+              element={
+                <ProtectedRoute roles={['superadmin', 'admin']}>
+                  <UsersPage />
                 </ProtectedRoute>
               }
             />
