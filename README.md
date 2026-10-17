@@ -82,6 +82,7 @@ npm run prisma:seed
 |------|--------|
 | `superadmin` | Everything, including granting/revoking `superadmin` |
 | `admin` | Manage all users (except superadmins) and all groups |
+| `operator` | App PIC: manage `user`/`murabbi`/`bendahara` accounts (role & active status), all kajian, and institution programs. No access to halaqoh data or other members' mutaba'ah |
 | `bendahara` | Manage the institution's (lembaga) cash accounts; view all halaqoh cash accounts |
 | `murabbi` | Create groups and manage the groups they lead |
 | `user` | Personal activities plus the activities of every halaqoh they belong to |
@@ -183,8 +184,8 @@ A meeting (`Meeting`) belongs to either a halaqoh or a kajian. Attendance status
 - `POST /api/meetings/:id/check-in` - self check-in as `hadir`, only on the meeting date (halaqoh members, or anyone for an active kajian)
 
 ### Kajian (regular study circles, open to all users)
-- `GET|POST /api/kajian` - POST: murabbi, admin, superadmin
-- `GET|PATCH|DELETE /api/kajian/:id` - managed by its creator or admin/superadmin
+- `GET|POST /api/kajian` - POST: murabbi, operator, admin, superadmin
+- `GET|PATCH|DELETE /api/kajian/:id` - managed by its creator or operator/admin/superadmin
 - `POST /api/kajian/:id/meetings` - add a session; speaker and location default to the kajian's
 
 Kajian participants only see attendance counts and their own status; the full list is visible to the kajian's managers.
@@ -207,12 +208,12 @@ A cash account (`FinanceAccount`) belongs to the institution (`groupId` null) or
 - Monthly dues: `POST /api/finance/accounts/:id/dues`, `PATCH|DELETE /api/finance/dues/:planId`, `GET /api/finance/dues/:planId/status?year=` (members × months), `POST /api/finance/dues/:planId/payments` (`{ userId, period: yyyy-MM, amount? }`, recorded as an income transaction), `DELETE /api/finance/dues/:planId/payments?userId=&period=`
 
 ### Programs
-Institution programs are visible to everyone; halaqoh programs to the halaqoh's members. Managed by the creator, the PIC, the halaqoh's murabbi, or admin/superadmin. Status: `rencana`, `berjalan`, `selesai`, `batal`. Budget realization = expense transactions linked to the program.
+Institution programs are visible to everyone; halaqoh programs to the halaqoh's members. Managed by the creator, the PIC, the halaqoh's murabbi, or admin/superadmin (operator: institution programs only). Status: `rencana`, `berjalan`, `selesai`, `batal`. Budget realization = expense transactions linked to the program.
 - `GET|POST /api/programs`, `GET|PATCH|DELETE /api/programs/:id`
 - `POST /api/programs/:id/participants` - `{}` to join yourself as peserta (while rencana/berjalan), or `{ userId, role: panitia|peserta }` for managers
 - `PATCH|DELETE /api/programs/:id/participants/:userId` - participants may remove themselves
 
-### Users (superadmin/admin; murabbi and halaqoh murabbi members can list)
+### Users (superadmin/admin/operator; murabbi and halaqoh murabbi members can list)
 - `GET /api/users?search=` - List users
 - `PATCH /api/users/:id/role` - `{ role }`
 - `PATCH /api/users/:id/status` - `{ isActive }`

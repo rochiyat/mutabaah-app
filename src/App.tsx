@@ -184,7 +184,7 @@ const AppContent: React.FC = () => {
             <Route
               path="/users"
               element={
-                <ProtectedRoute roles={['superadmin', 'admin']}>
+                <ProtectedRoute roles={['superadmin', 'admin', 'operator']}>
                   <UsersPage />
                 </ProtectedRoute>
               }

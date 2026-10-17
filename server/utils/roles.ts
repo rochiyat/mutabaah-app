@@ -1,4 +1,4 @@
-export const ROLES = ['superadmin', 'admin', 'bendahara', 'murabbi', 'user'] as const
+export const ROLES = ['superadmin', 'admin', 'operator', 'bendahara', 'murabbi', 'user'] as const
 
 export type Role = (typeof ROLES)[number]
 
@@ -8,6 +8,21 @@ export const isRole = (value: unknown): value is Role =>
 // superadmin & admin (pengurus) bisa mengelola semua grup dan user
 export const isManager = (role: string): boolean =>
   role === 'superadmin' || role === 'admin'
+
+// Operator: PJ administrasi aplikasi (kelola akun, kajian & program lembaga)
+// tanpa akses ke data halaqoh/mutaba'ah anggota
+export const isOperator = (role: string): boolean => role === 'operator'
+
+// Yang boleh membuka menu kelola user
+export const canManageUsers = (role: string): boolean => isManager(role) || isOperator(role)
+
+// Role yang boleh diberikan/dicabut oleh masing-masing pengelola user
+export const assignableRoles = (role: string): readonly Role[] => {
+  if (role === 'superadmin') return ROLES
+  if (role === 'admin') return ROLES.filter((r) => r !== 'superadmin')
+  if (role === 'operator') return ['user', 'murabbi', 'bendahara']
+  return []
+}
 
 // Yang boleh membuat grup/halaqoh baru
 export const canCreateGroup = (role: string): boolean =>
@@ -43,13 +58,16 @@ export const canViewGroup = (
   user: { userId: number; role: string }
 ): boolean => isGroupMember(group, user.userId) || canManageGroup(group, user)
 
-// Kajian rutin: dibuat oleh pengurus atau murabbi, dikelola pembuatnya atau pengurus
-export const canCreateKajian = canCreateGroup
+// Kajian rutin: dibuat oleh pengurus, operator, atau murabbi; dikelola pembuatnya, pengurus, atau operator
+export const canCreateKajian = (role: string): boolean => canCreateGroup(role) || isOperator(role)
+
+// Program lembaga (tanpa halaqoh) mengikuti aturan yang sama dengan kajian
+export const canCreateLembagaProgram = canCreateKajian
 
 export const canManageKajian = (
   kajian: { createdById: number | null },
   user: { userId: number; role: string }
-): boolean => kajian.createdById === user.userId || isManager(user.role)
+): boolean => kajian.createdById === user.userId || canManageUsers(user.role)
 
 export const ATTENDANCE_STATUSES = ['hadir', 'izin', 'sakit', 'alpa'] as const
 

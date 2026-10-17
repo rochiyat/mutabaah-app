@@ -2,9 +2,7 @@ import React, { useEffect, useState } from 'react'
 import type { Role, User } from '@/types'
 import { userAPI } from '@/services/api'
 import { useAuth } from '@/hooks/useAuth'
-import { ROLE_LABELS, getErrorMessage } from '@/utils/labels'
-
-const ALL_ROLES: Role[] = ['user', 'murabbi', 'bendahara', 'admin', 'superadmin']
+import { ROLE_LABELS, assignableRolesFor, getErrorMessage } from '@/utils/labels'
 
 export const UsersPage: React.FC = () => {
   const { user: me } = useAuth()
@@ -13,8 +11,7 @@ export const UsersPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const isSuperadmin = me?.role === 'superadmin'
-  const assignableRoles = isSuperadmin ? ALL_ROLES : ALL_ROLES.filter((r) => r !== 'superadmin')
+  const assignableRoles = assignableRolesFor(me?.role)
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -83,8 +80,8 @@ export const UsersPage: React.FC = () => {
             </thead>
             <tbody>
               {users.map((u) => {
-                // Diri sendiri & superadmin (bagi admin) tidak bisa diubah
-                const locked = u.id === me?.id || (!isSuperadmin && u.role === 'superadmin')
+                // Diri sendiri & role di atas wewenang kita tidak bisa diubah
+                const locked = u.id === me?.id || !assignableRoles.includes(u.role)
                 return (
                   <tr key={u.id} className={u.isActive ? '' : 'inactive'}>
                     <td>{u.name}</td>

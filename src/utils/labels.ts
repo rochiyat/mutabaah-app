@@ -3,6 +3,7 @@ import type { AttendanceStatus, GroupMemberRole, ProgramStatus, Role } from '@/t
 export const ROLE_LABELS: Record<Role, string> = {
   superadmin: 'Superadmin',
   admin: 'Admin (Pengurus)',
+  operator: 'Operator (PJ Aplikasi)',
   bendahara: 'Bendahara',
   murabbi: 'Murabbi',
   user: 'Anggota',
@@ -18,6 +19,23 @@ export const isManagerRole = (role?: Role): boolean =>
 
 export const canCreateGroupRole = (role?: Role): boolean =>
   isManagerRole(role) || role === 'murabbi'
+
+// Operator: kelola user, kajian & program lembaga, tanpa akses data halaqoh
+export const canManageUsersRole = (role?: Role): boolean =>
+  isManagerRole(role) || role === 'operator'
+
+export const canCreateKajianRole = (role?: Role): boolean =>
+  canCreateGroupRole(role) || role === 'operator'
+
+const ALL_ROLES: Role[] = ['user', 'murabbi', 'bendahara', 'operator', 'admin', 'superadmin']
+
+// Sama dengan assignableRoles di server/utils/roles.ts
+export const assignableRolesFor = (role?: Role): Role[] => {
+  if (role === 'superadmin') return ALL_ROLES
+  if (role === 'admin') return ALL_ROLES.filter((r) => r !== 'superadmin')
+  if (role === 'operator') return ['user', 'murabbi', 'bendahara']
+  return []
+}
 
 export const getErrorMessage = (err: unknown, fallback: string): string => {
   const anyErr = err as { response?: { data?: { message?: string } } }

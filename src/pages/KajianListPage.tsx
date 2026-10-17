@@ -4,7 +4,7 @@ import type { Kajian, KajianInput } from '@/types'
 import { kajianAPI } from '@/services/api'
 import { useAuth } from '@/hooks/useAuth'
 import { KajianForm } from '@/components/kajian/KajianForm'
-import { canCreateGroupRole, formatDate, getErrorMessage } from '@/utils/labels'
+import { canCreateKajianRole, formatDate, getErrorMessage } from '@/utils/labels'
 
 export const KajianListPage: React.FC = () => {
   const { user } = useAuth()
@@ -33,7 +33,7 @@ export const KajianListPage: React.FC = () => {
     <div className="activity-list">
       <div className="page-header">
         <h2>Kajian Rutin</h2>
-        {canCreateGroupRole(user?.role) && (
+        {canCreateKajianRole(user?.role) && (
           <button onClick={() => setShowForm(!showForm)} className="btn-primary">
             {showForm ? 'Batal' : 'Buat Kajian'}
           </button>

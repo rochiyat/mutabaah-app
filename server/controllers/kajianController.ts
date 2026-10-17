@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { prisma } from '../utils/prisma';
-import { canCreateKajian, canManageKajian, isManager } from '../utils/roles';
+import { canCreateKajian, canManageKajian, canManageUsers } from '../utils/roles';
 import { meetingSchema, sendValidationError } from '../utils/meetingSchema';
 import { dateKeyToDb, toDateKey } from '../utils/date';
 import { getAttendanceCounts } from './meetingController';
@@ -37,7 +37,7 @@ export const getKajianList = async (req: Request, res: Response): Promise<void> 
     const user = req.user!;
     // Semua user melihat kajian aktif; pengurus & pembuat juga melihat yang nonaktif
     const list = await prisma.kajian.findMany({
-      where: isManager(user.role)
+      where: canManageUsers(user.role)
         ? undefined
         : { OR: [{ isActive: true }, { createdById: user.userId }] },
       include: {

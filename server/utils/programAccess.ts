@@ -1,5 +1,5 @@
 import { prisma } from './prisma'
-import { canManageGroup, canViewGroup, isManager } from './roles'
+import { canManageGroup, canViewGroup, isManager, isOperator } from './roles'
 
 type AuthUser = { userId: number; role: string }
 
@@ -33,6 +33,7 @@ export const canViewProgram = (program: ProgramForAccess, user: AuthUser): boole
 
 export const canManageProgram = (program: ProgramForAccess, user: AuthUser): boolean =>
   isManager(user.role) ||
+  (!program.group && isOperator(user.role)) ||
   program.createdById === user.userId ||
   program.picId === user.userId ||
   (!!program.group && canManageGroup(program.group, user))
