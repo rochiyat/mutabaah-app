@@ -1,3 +1,5 @@
+import { randomInt } from 'crypto'
+import bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
 import { prisma } from '../utils/prisma'
 import {
@@ -16,6 +18,7 @@ const userSelect = {
   name: true,
   roles: true,
   isActive: true,
+  mustChangePassword: true,
   createdAt: true,
   updatedAt: true,
 } as const
@@ -133,5 +136,50 @@ export const updateStatus = async (req: Request, res: Response): Promise<void> =
     res.json(toPublic(updated))
   } catch (error) {
     res.status(500).json({ message: 'Gagal mengubah status user' })
+  }
+}
+
+// Tanpa huruf/angka yang mirip (0/O, 1/l/I) agar mudah dibacakan ke user
+const TEMP_PASSWORD_CHARS = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'
+
+const generateTemporaryPassword = (length = 10): string =>
+  Array.from({ length }, () => TEMP_PASSWORD_CHARS[randomInt(TEMP_PASSWORD_CHARS.length)]).join('')
+
+// Reset password oleh pengurus: buat password sementara (ditampilkan sekali),
+// akhiri semua sesi user, dan wajibkan ganti password saat login berikutnya
+export const resetPassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const id = parseInt(req.params.id)
+
+    if (id === req.user!.userId) {
+      res.status(400).json({ message: 'Gunakan menu Ganti Password untuk akun sendiri' })
+      return
+    }
+
+    const target = await prisma.user.findUnique({ where: { id }, select: { roles: true } })
+    if (!target) {
+      res.status(404).json({ message: 'User tidak ditemukan' })
+      return
+    }
+
+    if (!canManageTarget(req.user!.roles, parseRoles(target.roles))) {
+      res.status(403).json({ message: 'Anda tidak berwenang me-reset password user ini' })
+      return
+    }
+
+    const temporaryPassword = generateTemporaryPassword()
+    const updated = await prisma.user.update({
+      where: { id },
+      data: {
+        password: await bcrypt.hash(temporaryPassword, 10),
+        mustChangePassword: true,
+        passwordChangedAt: new Date(),
+      },
+      select: userSelect,
+    })
+
+    res.json({ user: toPublic(updated), temporaryPassword })
+  } catch (error) {
+    res.status(500).json({ message: 'Gagal me-reset password' })
   }
 }

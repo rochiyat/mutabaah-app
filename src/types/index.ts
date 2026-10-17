@@ -7,6 +7,8 @@ export interface User {
   name: string;
   roles: Role[];
   isActive: boolean;
+  // true setelah password di-reset pengurus
+  mustChangePassword?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -98,6 +100,11 @@ export interface ActivityRecord {
 export interface AuthResponse {
   user: User;
   token: string;
+}
+
+export interface ResetPasswordResponse {
+  user: User;
+  temporaryPassword: string;
 }
 
 export interface ApiError {

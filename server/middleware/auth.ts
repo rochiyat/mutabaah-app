@@ -27,11 +27,34 @@ export const authenticate = async (
     // Ambil role & status terbaru dari DB supaya perubahan role/nonaktif langsung berlaku
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, roles: true, isActive: true },
+      select: {
+        id: true,
+        email: true,
+        roles: true,
+        isActive: true,
+        mustChangePassword: true,
+        passwordChangedAt: true,
+      },
     })
 
     if (!user || !user.isActive) {
       res.status(401).json({ message: 'Akun tidak aktif atau tidak ditemukan' })
+      return
+    }
+
+    // Token lama tidak berlaku lagi setelah password diganti atau di-reset
+    if (
+      user.passwordChangedAt &&
+      (decoded.iat ?? 0) < Math.floor(user.passwordChangedAt.getTime() / 1000)
+    ) {
+      res.status(401).json({ message: 'Sesi berakhir karena password diganti, silakan login ulang' })
+      return
+    }
+
+    // Setelah reset, hanya boleh melihat profil dan mengganti password
+    const allowedWhileMustChange = ['/api/auth/me', '/api/auth/change-password']
+    if (user.mustChangePassword && !allowedWhileMustChange.includes(req.originalUrl.split('?')[0])) {
+      res.status(403).json({ message: 'Silakan ganti password terlebih dahulu', code: 'MUST_CHANGE_PASSWORD' })
       return
     }
 

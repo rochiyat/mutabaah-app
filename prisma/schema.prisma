@@ -15,6 +15,10 @@ model User {
   // Peran tambahan (JSON array), misal ["murabbi","bendahara"]; [] = anggota biasa
   roles     Json
   isActive  Boolean  @default(true)
+  // true setelah password di-reset pengurus: user wajib ganti password saat login
+  mustChangePassword Boolean   @default(false)
+  // Token yang dibuat sebelum waktu ini dianggap tidak berlaku
+  passwordChangedAt  DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

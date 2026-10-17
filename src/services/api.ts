@@ -10,6 +10,7 @@ import type {
   GroupMember,
   GroupMemberRole,
   AuthResponse,
+  ResetPasswordResponse,
   ApiError,
   Role,
   Attendance,
@@ -70,6 +71,8 @@ export const authAPI = {
   login: (email: string, password: string) =>
     api.post<AuthResponse>('/auth/login', { email, password }),
   getCurrentUser: () => api.get<User>('/auth/me'),
+  changePassword: (currentPassword: string, newPassword: string) =>
+    api.post<AuthResponse>('/auth/change-password', { currentPassword, newPassword }),
 };
 
 export const activityAPI = {
@@ -181,6 +184,7 @@ export const groupActivityAPI = {
 export const userAPI = {
   getUsers: (search?: string) => api.get<User[]>('/users', { params: { search } }),
   updateRoles: (id: number, roles: Role[]) => api.patch<User>(`/users/${id}/roles`, { roles }),
+  resetPassword: (id: number) => api.post<ResetPasswordResponse>(`/users/${id}/reset-password`),
   updateStatus: (id: number, isActive: boolean) =>
     api.patch<User>(`/users/${id}/status`, { isActive }),
 };

@@ -20,6 +20,9 @@ export const Navbar: React.FC = () => {
         {user && (
           <>
             <span className="user-name">{user.name}</span>
+            <Link to="/ganti-password" className="nav-link">
+              Ganti Password
+            </Link>
             <button onClick={handleLogout} className="btn-logout">
               Logout
             </button>

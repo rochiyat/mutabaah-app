@@ -5,10 +5,17 @@ import { prisma } from '../utils/prisma';
 import { generateToken } from '../utils/jwt';
 import { parseRoles } from '../utils/roles';
 
+const passwordField = z.string().min(8, 'Password minimal 8 karakter').max(100);
+
 const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email('Format email tidak valid'),
   name: z.string().trim().min(2, 'Nama minimal 2 karakter').max(100),
-  password: z.string().min(8, 'Password minimal 8 karakter').max(100),
+  password: passwordField,
+});
+
+const changePasswordSchema = z.object({
+  currentPassword: z.string().min(1, 'Password lama wajib diisi'),
+  newPassword: passwordField,
 });
 
 const loginSchema = z.object({
@@ -111,5 +118,50 @@ export const getCurrentUser = async (
     res.json({ ...userWithoutPassword, roles: parseRoles(user.roles) });
   } catch (error) {
     res.status(500).json({ message: 'Gagal mengambil data user' });
+  }
+};
+
+// Ganti password sendiri. Sesi lain ikut berakhir; sesi ini dapat token baru.
+export const changePassword = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parsed = changePasswordSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ message: parsed.error.issues[0].message });
+      return;
+    }
+    const { currentPassword, newPassword } = parsed.data;
+
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+    if (!user) {
+      res.status(404).json({ message: 'User tidak ditemukan' });
+      return;
+    }
+
+    // 400, bukan 401: 401 membuat frontend logout otomatis
+    if (!(await bcrypt.compare(currentPassword, user.password))) {
+      res.status(400).json({ message: 'Password lama salah' });
+      return;
+    }
+    if (await bcrypt.compare(newPassword, user.password)) {
+      res.status(400).json({ message: 'Password baru harus berbeda dari password lama' });
+      return;
+    }
+
+    // Dibulatkan ke detik agar token baru (iat dalam detik) tetap berlaku
+    const changedAt = new Date(Math.floor(Date.now() / 1000) * 1000);
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: await bcrypt.hash(newPassword, 10),
+        mustChangePassword: false,
+        passwordChangedAt: changedAt,
+      },
+    });
+
+    const token = generateToken({ userId: updated.id, email: updated.email });
+    const { password: _, ...userWithoutPassword } = updated;
+    res.json({ user: { ...userWithoutPassword, roles: parseRoles(updated.roles) }, token });
+  } catch (error) {
+    res.status(500).json({ message: 'Gagal mengganti password' });
   }
 };

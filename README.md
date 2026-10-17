@@ -153,6 +153,9 @@ mutabaah-app/
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 - `GET /api/auth/me` - Current user
+- `POST /api/auth/change-password` - `{ currentPassword, newPassword }`; ends the user's other sessions and returns a new token
+
+After a password reset the user must change their password: until then every endpoint except `/api/auth/me` and `/api/auth/change-password` returns `403` with `code: "MUST_CHANGE_PASSWORD"`.
 
 ### Activities
 - `GET /api/activities` - Get user's activities
@@ -220,6 +223,7 @@ Institution programs are visible to everyone; halaqoh programs to the halaqoh's 
 - `GET /api/users?search=` - List users
 - `PATCH /api/users/:id/roles` - `{ roles: Role[] }` replaces all of the user's roles
 - `PATCH /api/users/:id/status` - `{ isActive }`
+- `POST /api/users/:id/reset-password` - returns a one-time `temporaryPassword`, logs the user out everywhere, and forces a password change on next login
 
 ## Database Schema
 

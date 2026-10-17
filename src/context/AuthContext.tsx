@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react'
-import { User } from '@/types'
+import { AuthResponse, User } from '@/types'
 
 interface AuthContextType {
   user: User | null
@@ -8,6 +8,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (email: string, name: string, password: string) => Promise<void>
   logout: () => void
+  // Simpan sesi baru (misal setelah ganti password)
+  setSession: (session: AuthResponse) => void
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -64,6 +66,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('user', JSON.stringify(response.data.user))
   }
 
+  const setSession = ({ token: newToken, user: newUser }: AuthResponse) => {
+    setToken(newToken)
+    setUser(newUser)
+    localStorage.setItem('token', newToken)
+    localStorage.setItem('user', JSON.stringify(newUser))
+  }
+
   const logout = () => {
     setUser(null)
     setToken(null)
@@ -72,7 +81,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, setSession }}>
       {children}
     </AuthContext.Provider>
   )

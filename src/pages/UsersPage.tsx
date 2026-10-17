@@ -10,6 +10,8 @@ export const UsersPage: React.FC = () => {
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  // Password sementara hasil reset, ditampilkan sekali
+  const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null)
 
   const assignableRoles = assignableRolesFor(me?.roles)
 
@@ -54,6 +56,19 @@ export const UsersPage: React.FC = () => {
     }
   }
 
+  const resetPassword = async (target: User) => {
+    if (!confirm(`Reset password ${target.name}? Semua sesi login-nya akan berakhir.`)) return
+    setError('')
+    setResetResult(null)
+    try {
+      const { data } = await userAPI.resetPassword(target.id)
+      replaceUser(data.user)
+      setResetResult({ name: target.name, password: data.temporaryPassword })
+    } catch (err) {
+      setError(getErrorMessage(err, 'Gagal me-reset password'))
+    }
+  }
+
   return (
     <div className="activity-list">
       <div className="page-header">
@@ -68,6 +83,22 @@ export const UsersPage: React.FC = () => {
 
       {error && <div className="error">{error}</div>}
 
+      {resetResult && (
+        <div className="success reset-result">
+          <p>
+            Password sementara untuk <strong>{resetResult.name}</strong>:{' '}
+            <code>{resetResult.password}</code>
+          </p>
+          <p className="muted">
+            Sampaikan langsung ke yang bersangkutan. Password ini hanya ditampilkan sekali, dan
+            user wajib menggantinya saat login.
+          </p>
+          <button className="btn-small" onClick={() => setResetResult(null)}>
+            Tutup
+          </button>
+        </div>
+      )}
+
       {isLoading ? (
         <div>Loading...</div>
       ) : (
@@ -79,6 +110,7 @@ export const UsersPage: React.FC = () => {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Status</th>
+                <th>Password</th>
               </tr>
             </thead>
             <tbody>
@@ -120,6 +152,14 @@ export const UsersPage: React.FC = () => {
                           {u.isActive ? 'Nonaktifkan' : 'Aktifkan'}
                         </button>
                       )}
+                    </td>
+                    <td>
+                      {!locked && (
+                        <button className="btn-small" onClick={() => resetPassword(u)}>
+                          Reset
+                        </button>
+                      )}
+                      {u.mustChangePassword && <div className="muted">Menunggu diganti</div>}
                     </td>
                   </tr>
                 )
