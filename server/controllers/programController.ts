@@ -5,7 +5,7 @@ import { prisma } from '../utils/prisma';
 import { findGroupForAccess } from '../utils/groupAccess';
 import { canManageProgram, canViewProgram, findProgramForAccess } from '../utils/programAccess';
 import {
-  canCreateGroup,
+  canCreateLembagaProgram,
   canManageGroup,
   isManager,
   PROGRAM_PARTICIPANT_ROLES,
@@ -136,7 +136,7 @@ export const createProgram = async (req: Request, res: Response): Promise<void> 
         res.status(403).json({ message: 'Hanya murabbi halaqoh yang bisa membuat program halaqoh' });
         return;
       }
-    } else if (!canCreateGroup(req.user!.role)) {
+    } else if (!canCreateLembagaProgram(req.user!.role)) {
       res.status(403).json({ message: 'Hanya murabbi atau pengurus yang bisa membuat program' });
       return;
     }

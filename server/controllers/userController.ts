@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { prisma } from '../utils/prisma'
-import { canCreateGroup, isFinanceManager, isRole } from '../utils/roles'
+import { assignableRoles, canCreateGroup, canManageUsers, isFinanceManager, isRole } from '../utils/roles'
 
 const userSelect = {
   id: true,
@@ -14,9 +14,10 @@ const userSelect = {
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
   try {
-    // Pengurus, bendahara & murabbi, atau user yang menjadi murabbi di salah satu halaqoh
+    // Pengurus, operator, bendahara & murabbi, atau user yang menjadi murabbi di salah satu halaqoh
     const allowed =
       canCreateGroup(req.user!.role) ||
+      canManageUsers(req.user!.role) ||
       isFinanceManager(req.user!.role) ||
       (await prisma.groupMember.count({
         where: { userId: req.user!.userId, role: 'murabbi' },
@@ -64,9 +65,10 @@ export const updateRole = async (req: Request, res: Response): Promise<void> => 
       return
     }
 
-    // Hanya superadmin yang boleh memberi atau mencabut role superadmin
-    if (req.user!.role !== 'superadmin' && (role === 'superadmin' || target.role === 'superadmin')) {
-      res.status(403).json({ message: 'Hanya superadmin yang bisa mengatur role superadmin' })
+    // Superadmin bebas; admin tidak bisa menyentuh superadmin; operator hanya role non-pengurus
+    const allowedRoles = assignableRoles(req.user!.role)
+    if (!allowedRoles.includes(role) || !allowedRoles.includes(target.role as typeof role)) {
+      res.status(403).json({ message: 'Anda tidak berwenang mengatur role ini' })
       return
     }
 
@@ -103,8 +105,8 @@ export const updateStatus = async (req: Request, res: Response): Promise<void> =
       return
     }
 
-    if (req.user!.role !== 'superadmin' && target.role === 'superadmin') {
-      res.status(403).json({ message: 'Hanya superadmin yang bisa menonaktifkan superadmin' })
+    if (!isRole(target.role) || !assignableRoles(req.user!.role).includes(target.role)) {
+      res.status(403).json({ message: 'Anda tidak berwenang mengubah status user ini' })
       return
     }
 

@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { ProgramForm } from '@/components/programs/ProgramForm'
 import {
   PROGRAM_STATUS_LABELS,
-  canCreateGroupRole,
+  canCreateKajianRole,
   formatDate,
   formatMoney,
   getErrorMessage,
@@ -41,7 +41,7 @@ export const ProgramsPage: React.FC = () => {
       .finally(() => setIsLoading(false))
   }, [user])
 
-  const canLembaga = canCreateGroupRole(user?.role)
+  const canLembaga = canCreateKajianRole(user?.role)
   const canCreate = canLembaga || groups.length > 0
 
   const handleCreate = async (data: ProgramInput) => {

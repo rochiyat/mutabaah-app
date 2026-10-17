@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { canManageUsersRole } from '@/utils/labels'
 
 export const Sidebar: React.FC = () => {
   const location = useLocation()
@@ -8,7 +9,7 @@ export const Sidebar: React.FC = () => {
 
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`)
-  const isManager = user?.role === 'superadmin' || user?.role === 'admin'
+  const canManageUsers = canManageUsersRole(user?.role)
 
   return (
     <aside className="sidebar">
@@ -53,7 +54,7 @@ export const Sidebar: React.FC = () => {
             Program
           </Link>
         </li>
-        {isManager && (
+        {canManageUsers && (
           <li>
             <Link to="/users" className={isActive('/users') ? 'active' : ''}>
               Kelola User
