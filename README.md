@@ -155,6 +155,8 @@ mutabaah-app/
 - `GET /api/auth/me` - Current user
 - `POST /api/auth/change-password` - `{ currentPassword, newPassword }`; ends the user's other sessions and returns a new token
 
+Login protection: after 5 wrong passwords in a row an account is locked for 15 minutes (`429`); a password reset by a user manager also unlocks it. Per IP, `/login` allows 20 requests per 15 minutes, `/register` 10 per hour and `/change-password` 10 per 15 minutes. The per-IP limit is kept in memory (single server instance). Behind a reverse proxy, set `TRUST_PROXY` (e.g. `1`) so the real client IP is used.
+
 After a password reset the user must change their password: until then every endpoint except `/api/auth/me` and `/api/auth/change-password` returns `403` with `code: "MUST_CHANGE_PASSWORD"`.
 
 ### Activities

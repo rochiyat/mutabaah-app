@@ -19,6 +19,7 @@ const userSelect = {
   roles: true,
   isActive: true,
   mustChangePassword: true,
+  lockedUntil: true,
   createdAt: true,
   updatedAt: true,
 } as const
@@ -174,6 +175,9 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
         password: await bcrypt.hash(temporaryPassword, 10),
         mustChangePassword: true,
         passwordChangedAt: new Date(),
+        // Reset juga membuka kunci login
+        failedLoginAttempts: 0,
+        lockedUntil: null,
       },
       select: userSelect,
     })

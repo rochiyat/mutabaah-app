@@ -9,6 +9,8 @@ export interface User {
   isActive: boolean;
   // true setelah password di-reset pengurus
   mustChangePassword?: boolean;
+  // Terisi jika login dikunci sementara karena terlalu banyak password salah
+  lockedUntil?: string | null;
   createdAt: string;
   updatedAt: string;
 }

@@ -160,6 +160,15 @@ export const UsersPage: React.FC = () => {
                         </button>
                       )}
                       {u.mustChangePassword && <div className="muted">Menunggu diganti</div>}
+                      {u.lockedUntil && new Date(u.lockedUntil) > new Date() && (
+                        <div className="muted">
+                          Login terkunci s/d{' '}
+                          {new Date(u.lockedUntil).toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 )

@@ -25,6 +25,13 @@ const __dirname = path.dirname(__filename);
 const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
+// Wajib diatur jika server di belakang reverse proxy/hosting (Nginx, Railway, dll.)
+// agar pembatasan login per IP memakai IP asli pengguna, bukan IP proxy
+const trustProxy = process.env.TRUST_PROXY;
+if (trustProxy) {
+  app.set('trust proxy', /^\d+$/.test(trustProxy) ? Number(trustProxy) : trustProxy === 'true');
+}
+
 app.use(cors());
 app.use(express.json());
 
