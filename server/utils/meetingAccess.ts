@@ -1,7 +1,7 @@
 import { prisma } from './prisma'
 import { canManageGroup, canManageKajian, canViewGroup } from './roles'
 
-type AuthUser = { userId: number; role: string }
+type AuthUser = { userId: number; roles: readonly string[] }
 
 export const findMeetingForAccess = (meetingId: string | number) => {
   const id = typeof meetingId === 'number' ? meetingId : parseInt(meetingId)

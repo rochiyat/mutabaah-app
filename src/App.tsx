@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from 'react-router-dom';
 import { AuthProvider, AuthContext } from '@/context/AuthContext';
 import { Login } from '@/components/auth/Login';
@@ -24,6 +25,7 @@ import { FinancePage } from '@/pages/FinancePage';
 import { FinanceAccountPage } from '@/pages/FinanceAccountPage';
 import { ProgramsPage } from '@/pages/ProgramsPage';
 import { ProgramDetailPage } from '@/pages/ProgramDetailPage';
+import { ChangePasswordPage } from '@/pages/ChangePasswordPage';
 import type { Role } from '@/types';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -33,6 +35,7 @@ const ProtectedRoute: React.FC<{
   roles?: Role[];
 }> = ({ children, roles }) => {
   const context = React.useContext(AuthContext);
+  const location = useLocation();
 
   if (!context) {
     return <Navigate to="/login" />;
@@ -48,7 +51,12 @@ const ProtectedRoute: React.FC<{
     return <Navigate to="/login" />;
   }
 
-  if (roles && !roles.includes(user.role)) {
+  // Password baru di-reset pengurus: wajib diganti sebelum memakai aplikasi
+  if (user.mustChangePassword && location.pathname !== '/ganti-password') {
+    return <Navigate to="/ganti-password" />;
+  }
+
+  if (roles && !roles.some((r) => user.roles.includes(r))) {
     return <Navigate to="/dashboard" />;
   }
 
@@ -178,6 +186,14 @@ const AppContent: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <ProgramDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ganti-password"
+              element={
+                <ProtectedRoute>
+                  <ChangePasswordPage />
                 </ProtectedRoute>
               }
             />

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import type { Role, User } from '@/types'
 import { userAPI } from '@/services/api'
 import { useAuth } from '@/hooks/useAuth'
-import { ROLE_LABELS, assignableRolesFor, getErrorMessage } from '@/utils/labels'
+import { ROLE_LABELS, assignableRolesFor, formatRoles, getErrorMessage } from '@/utils/labels'
 
 export const UsersPage: React.FC = () => {
   const { user: me } = useAuth()
@@ -10,8 +10,10 @@ export const UsersPage: React.FC = () => {
   const [search, setSearch] = useState('')
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  // Password sementara hasil reset, ditampilkan sekali
+  const [resetResult, setResetResult] = useState<{ name: string; password: string } | null>(null)
 
-  const assignableRoles = assignableRolesFor(me?.role)
+  const assignableRoles = assignableRolesFor(me?.roles)
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -31,10 +33,13 @@ export const UsersPage: React.FC = () => {
   const replaceUser = (updated: User) =>
     setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)))
 
-  const changeRole = async (target: User, role: Role) => {
+  const toggleRole = async (target: User, role: Role) => {
+    const roles = target.roles.includes(role)
+      ? target.roles.filter((r) => r !== role)
+      : [...target.roles, role]
     setError('')
     try {
-      replaceUser((await userAPI.updateRole(target.id, role)).data)
+      replaceUser((await userAPI.updateRoles(target.id, roles)).data)
     } catch (err) {
       setError(getErrorMessage(err, 'Gagal mengubah role'))
     }
@@ -48,6 +53,19 @@ export const UsersPage: React.FC = () => {
       replaceUser((await userAPI.updateStatus(target.id, !target.isActive)).data)
     } catch (err) {
       setError(getErrorMessage(err, 'Gagal mengubah status'))
+    }
+  }
+
+  const resetPassword = async (target: User) => {
+    if (!confirm(`Reset password ${target.name}? Semua sesi login-nya akan berakhir.`)) return
+    setError('')
+    setResetResult(null)
+    try {
+      const { data } = await userAPI.resetPassword(target.id)
+      replaceUser(data.user)
+      setResetResult({ name: target.name, password: data.temporaryPassword })
+    } catch (err) {
+      setError(getErrorMessage(err, 'Gagal me-reset password'))
     }
   }
 
@@ -65,6 +83,22 @@ export const UsersPage: React.FC = () => {
 
       {error && <div className="error">{error}</div>}
 
+      {resetResult && (
+        <div className="success reset-result">
+          <p>
+            Password sementara untuk <strong>{resetResult.name}</strong>:{' '}
+            <code>{resetResult.password}</code>
+          </p>
+          <p className="muted">
+            Sampaikan langsung ke yang bersangkutan. Password ini hanya ditampilkan sekali, dan
+            user wajib menggantinya saat login.
+          </p>
+          <button className="btn-small" onClick={() => setResetResult(null)}>
+            Tutup
+          </button>
+        </div>
+      )}
+
       {isLoading ? (
         <div>Loading...</div>
       ) : (
@@ -76,30 +110,35 @@ export const UsersPage: React.FC = () => {
                 <th>Email</th>
                 <th>Role</th>
                 <th>Status</th>
+                <th>Password</th>
               </tr>
             </thead>
             <tbody>
               {users.map((u) => {
-                // Diri sendiri & role di atas wewenang kita tidak bisa diubah
-                const locked = u.id === me?.id || !assignableRoles.includes(u.role)
+                // Diri sendiri & user dengan role di atas wewenang kita tidak bisa diubah
+                const locked =
+                  u.id === me?.id || !u.roles.every((r) => assignableRoles.includes(r))
                 return (
                   <tr key={u.id} className={u.isActive ? '' : 'inactive'}>
                     <td>{u.name}</td>
                     <td>{u.email}</td>
                     <td>
                       {locked ? (
-                        ROLE_LABELS[u.role]
+                        formatRoles(u.roles)
                       ) : (
-                        <select
-                          value={u.role}
-                          onChange={(e) => changeRole(u, e.target.value as Role)}
-                        >
+                        <div className="role-checks">
                           {assignableRoles.map((r) => (
-                            <option key={r} value={r}>
+                            <label key={r} className="role-check">
+                              <input
+                                type="checkbox"
+                                checked={u.roles.includes(r)}
+                                onChange={() => toggleRole(u, r)}
+                              />
                               {ROLE_LABELS[r]}
-                            </option>
+                            </label>
                           ))}
-                        </select>
+                          {u.roles.length === 0 && <span className="muted">Anggota</span>}
+                        </div>
                       )}
                     </td>
                     <td>
@@ -112,6 +151,23 @@ export const UsersPage: React.FC = () => {
                         >
                           {u.isActive ? 'Nonaktifkan' : 'Aktifkan'}
                         </button>
+                      )}
+                    </td>
+                    <td>
+                      {!locked && (
+                        <button className="btn-small" onClick={() => resetPassword(u)}>
+                          Reset
+                        </button>
+                      )}
+                      {u.mustChangePassword && <div className="muted">Menunggu diganti</div>}
+                      {u.lockedUntil && new Date(u.lockedUntil) > new Date() && (
+                        <div className="muted">
+                          Login terkunci s/d{' '}
+                          {new Date(u.lockedUntil).toLocaleTimeString('id-ID', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </div>
                       )}
                     </td>
                   </tr>

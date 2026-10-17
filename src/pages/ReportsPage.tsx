@@ -62,7 +62,7 @@ export const ReportsPage: React.FC = () => {
       .then(([g, k]) => {
         setGroups(
           g.data.filter(
-            (x) => x.myRole === 'murabbi' || x.adminId === user?.id || isManagerRole(user?.role)
+            (x) => x.myRole === 'murabbi' || x.adminId === user?.id || isManagerRole(user?.roles)
           )
         )
         setKajianList(k.data.filter((x) => x.canManage))

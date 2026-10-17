@@ -12,8 +12,16 @@ model User {
   email     String   @unique
   name      String
   password  String
-  role      String   @default("user")
+  // Peran tambahan (JSON array), misal ["murabbi","bendahara"]; [] = anggota biasa
+  roles     Json
   isActive  Boolean  @default(true)
+  // true setelah password di-reset pengurus: user wajib ganti password saat login
+  mustChangePassword Boolean   @default(false)
+  // Token yang dibuat sebelum waktu ini dianggap tidak berlaku
+  passwordChangedAt  DateTime?
+  // Pembatasan login: akun dikunci sementara setelah beberapa kali password salah
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -31,8 +39,6 @@ model User {
   programsLed            Program[]            @relation("ProgramPic")
   programsCreated        Program[]            @relation("ProgramCreator")
   programParticipations  ProgramParticipant[]
-
-  @@index([role])
 }
 
 // Group = halaqoh / kelompok binaan. adminId = murabbi penanggung jawab.

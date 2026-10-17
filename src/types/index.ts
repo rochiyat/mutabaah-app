@@ -1,16 +1,21 @@
-export type Role = 'superadmin' | 'admin' | 'operator' | 'bendahara' | 'murabbi' | 'user';
+// Peran tambahan akun; tanpa peran tambahan = anggota biasa
+export type Role = 'superadmin' | 'admin' | 'operator' | 'bendahara' | 'murabbi';
 
 export interface User {
   id: number;
   email: string;
   name: string;
-  role: Role;
+  roles: Role[];
   isActive: boolean;
+  // true setelah password di-reset pengurus
+  mustChangePassword?: boolean;
+  // Terisi jika login dikunci sementara karena terlalu banyak password salah
+  lockedUntil?: string | null;
   createdAt: string;
   updatedAt: string;
 }
 
-export type PublicUser = Pick<User, 'id' | 'email' | 'name' | 'role' | 'isActive'>;
+export type PublicUser = Pick<User, 'id' | 'email' | 'name' | 'roles' | 'isActive'>;
 
 export type GroupMemberRole = 'murabbi' | 'mutarabbi';
 
@@ -97,6 +102,11 @@ export interface ActivityRecord {
 export interface AuthResponse {
   user: User;
   token: string;
+}
+
+export interface ResetPasswordResponse {
+  user: User;
+  temporaryPassword: string;
 }
 
 export interface ApiError {

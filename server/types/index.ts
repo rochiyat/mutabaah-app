@@ -3,7 +3,12 @@ import { User, Activity, Record } from '@prisma/client';
 export interface JWTPayload {
   userId: number;
   email: string;
-  role: string;
+  iat?: number;
+}
+
+// req.user: payload token + role terbaru dari DB
+export interface AuthUser extends JWTPayload {
+  roles: string[];
 }
 
 export interface RegisterDTO {

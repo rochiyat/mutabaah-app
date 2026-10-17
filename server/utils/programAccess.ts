@@ -1,7 +1,7 @@
 import { prisma } from './prisma'
 import { canManageGroup, canViewGroup, isManager, isOperator } from './roles'
 
-type AuthUser = { userId: number; role: string }
+type AuthUser = { userId: number; roles: readonly string[] }
 
 export const findProgramForAccess = (programId: string | number) => {
   const id = typeof programId === 'number' ? programId : parseInt(programId)
@@ -29,11 +29,11 @@ type ProgramForAccess = {
 
 // Program lembaga terbuka untuk semua user; program halaqoh untuk anggota halaqoh
 export const canViewProgram = (program: ProgramForAccess, user: AuthUser): boolean =>
-  !program.group || isManager(user.role) || canViewGroup(program.group, user)
+  !program.group || isManager(user.roles) || canViewGroup(program.group, user)
 
 export const canManageProgram = (program: ProgramForAccess, user: AuthUser): boolean =>
-  isManager(user.role) ||
-  (!program.group && isOperator(user.role)) ||
+  isManager(user.roles) ||
+  (!program.group && isOperator(user.roles)) ||
   program.createdById === user.userId ||
   program.picId === user.userId ||
   (!!program.group && canManageGroup(program.group, user))

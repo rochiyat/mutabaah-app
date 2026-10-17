@@ -1,39 +1,45 @@
 import type { AttendanceStatus, GroupMemberRole, ProgramStatus, Role } from '@/types'
 
+export const ALL_ROLES: Role[] = ['murabbi', 'bendahara', 'operator', 'admin', 'superadmin']
+
 export const ROLE_LABELS: Record<Role, string> = {
   superadmin: 'Superadmin',
   admin: 'Admin (Pengurus)',
   operator: 'Operator (PJ Aplikasi)',
   bendahara: 'Bendahara',
   murabbi: 'Murabbi',
-  user: 'Anggota',
 }
+
+// ["murabbi","bendahara"] -> "Murabbi, Bendahara"; [] -> "Anggota"
+export const formatRoles = (roles: Role[]): string =>
+  roles.length ? ALL_ROLES.filter((r) => roles.includes(r)).map((r) => ROLE_LABELS[r]).join(', ') : 'Anggota'
 
 export const MEMBER_ROLE_LABELS: Record<GroupMemberRole, string> = {
   murabbi: 'Murabbi',
   mutarabbi: 'Mutarabbi',
 }
 
-export const isManagerRole = (role?: Role): boolean =>
-  role === 'superadmin' || role === 'admin'
+// Izin dari beberapa role digabung (sama dengan server/utils/roles.ts)
+export const hasRole = (roles: Role[] | undefined, ...wanted: Role[]): boolean =>
+  !!roles && wanted.some((r) => roles.includes(r))
 
-export const canCreateGroupRole = (role?: Role): boolean =>
-  isManagerRole(role) || role === 'murabbi'
+export const isManagerRole = (roles?: Role[]): boolean => hasRole(roles, 'superadmin', 'admin')
+
+export const canCreateGroupRole = (roles?: Role[]): boolean =>
+  isManagerRole(roles) || hasRole(roles, 'murabbi')
 
 // Operator: kelola user, kajian & program lembaga, tanpa akses data halaqoh
-export const canManageUsersRole = (role?: Role): boolean =>
-  isManagerRole(role) || role === 'operator'
+export const canManageUsersRole = (roles?: Role[]): boolean =>
+  isManagerRole(roles) || hasRole(roles, 'operator')
 
-export const canCreateKajianRole = (role?: Role): boolean =>
-  canCreateGroupRole(role) || role === 'operator'
-
-const ALL_ROLES: Role[] = ['user', 'murabbi', 'bendahara', 'operator', 'admin', 'superadmin']
+export const canCreateKajianRole = (roles?: Role[]): boolean =>
+  canCreateGroupRole(roles) || hasRole(roles, 'operator')
 
 // Sama dengan assignableRoles di server/utils/roles.ts
-export const assignableRolesFor = (role?: Role): Role[] => {
-  if (role === 'superadmin') return ALL_ROLES
-  if (role === 'admin') return ALL_ROLES.filter((r) => r !== 'superadmin')
-  if (role === 'operator') return ['user', 'murabbi', 'bendahara']
+export const assignableRolesFor = (roles?: Role[]): Role[] => {
+  if (hasRole(roles, 'superadmin')) return ALL_ROLES
+  if (hasRole(roles, 'admin')) return ALL_ROLES.filter((r) => r !== 'superadmin')
+  if (hasRole(roles, 'operator')) return ['murabbi', 'bendahara']
   return []
 }
 
@@ -68,8 +74,8 @@ export const todayKey = (): string => {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
-export const isFinanceManagerRole = (role?: Role): boolean =>
-  isManagerRole(role) || role === 'bendahara'
+export const isFinanceManagerRole = (roles?: Role[]): boolean =>
+  isManagerRole(roles) || hasRole(roles, 'bendahara')
 
 const moneyFormatter = new Intl.NumberFormat('id-ID', {
   style: 'currency',

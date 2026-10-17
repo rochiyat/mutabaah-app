@@ -72,7 +72,7 @@ export const HalaqohDetailPage: React.FC = () => {
   if (isLoading) return <div>Loading...</div>
   if (!group) return <div className="error">{error || 'Halaqoh tidak ditemukan'}</div>
 
-  const isOwner = group.adminId === user?.id || isManagerRole(user?.role)
+  const isOwner = group.adminId === user?.id || isManagerRole(user?.roles)
   const isMember = group.members.some((m) => m.userId === user?.id)
   const murabbiMembers = group.members.filter((m) => m.role === 'murabbi')
 

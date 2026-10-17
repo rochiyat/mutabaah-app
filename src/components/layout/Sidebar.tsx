@@ -9,7 +9,7 @@ export const Sidebar: React.FC = () => {
 
   const isActive = (path: string) =>
     location.pathname === path || location.pathname.startsWith(`${path}/`)
-  const canManageUsers = canManageUsersRole(user?.role)
+  const canManageUsers = canManageUsersRole(user?.roles)
 
   return (
     <aside className="sidebar">

@@ -78,14 +78,17 @@ npm run prisma:seed
 
 ## Roles
 
+`User.roles` is a list: a user can hold several roles at once and their permissions are combined
+(e.g. `["murabbi", "bendahara"]`). An empty list means a regular member.
+
 | Role | Access |
 |------|--------|
 | `superadmin` | Everything, including granting/revoking `superadmin` |
 | `admin` | Manage all users (except superadmins) and all groups |
-| `operator` | App PIC: manage `user`/`murabbi`/`bendahara` accounts (role & active status), all kajian, and institution programs. No access to halaqoh data or other members' mutaba'ah |
+| `operator` | App PIC: manage accounts that only hold `murabbi`/`bendahara` (role & active status), all kajian, and institution programs. No access to halaqoh data or other members' mutaba'ah |
 | `bendahara` | Manage the institution's (lembaga) cash accounts; view all halaqoh cash accounts |
 | `murabbi` | Create groups and manage the groups they lead |
-| `user` | Personal activities plus the activities of every halaqoh they belong to |
+| _(none)_ | Regular member: personal activities plus the activities of every halaqoh they belong to |
 
 ### Halaqoh (groups)
 
@@ -150,6 +153,11 @@ mutabaah-app/
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
 - `GET /api/auth/me` - Current user
+- `POST /api/auth/change-password` - `{ currentPassword, newPassword }`; ends the user's other sessions and returns a new token
+
+Login protection: after 5 wrong passwords in a row an account is locked for 15 minutes (`429`); a password reset by a user manager also unlocks it. Per IP, `/login` allows 20 requests per 15 minutes, `/register` 10 per hour and `/change-password` 10 per 15 minutes. The per-IP limit is kept in memory (single server instance). Behind a reverse proxy, set `TRUST_PROXY` (e.g. `1`) so the real client IP is used.
+
+After a password reset the user must change their password: until then every endpoint except `/api/auth/me` and `/api/auth/change-password` returns `403` with `code: "MUST_CHANGE_PASSWORD"`.
 
 ### Activities
 - `GET /api/activities` - Get user's activities
@@ -215,8 +223,9 @@ Institution programs are visible to everyone; halaqoh programs to the halaqoh's 
 
 ### Users (superadmin/admin/operator; murabbi and halaqoh murabbi members can list)
 - `GET /api/users?search=` - List users
-- `PATCH /api/users/:id/role` - `{ role }`
+- `PATCH /api/users/:id/roles` - `{ roles: Role[] }` replaces all of the user's roles
 - `PATCH /api/users/:id/status` - `{ isActive }`
+- `POST /api/users/:id/reset-password` - returns a one-time `temporaryPassword`, logs the user out everywhere, and forces a password change on next login
 
 ## Database Schema
 

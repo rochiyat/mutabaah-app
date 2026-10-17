@@ -21,7 +21,7 @@ export const FinancePage: React.FC = () => {
         setAccounts(a.data)
         setManageableGroups(
           g.data.filter(
-            (x) => x.myRole === 'murabbi' || x.adminId === user?.id || isManagerRole(user?.role)
+            (x) => x.myRole === 'murabbi' || x.adminId === user?.id || isManagerRole(user?.roles)
           )
         )
       })
@@ -29,7 +29,7 @@ export const FinancePage: React.FC = () => {
       .finally(() => setIsLoading(false))
   }, [user])
 
-  const canLembaga = isFinanceManagerRole(user?.role)
+  const canLembaga = isFinanceManagerRole(user?.roles)
   const canCreate = canLembaga || manageableGroups.length > 0
 
   const handleCreate = async (data: FinanceAccountInput) => {

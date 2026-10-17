@@ -82,7 +82,7 @@ export const getPrograms = async (req: Request, res: Response): Promise<void> =>
   try {
     const user = req.user!;
     const programs = await prisma.program.findMany({
-      where: isManager(user.role)
+      where: isManager(user.roles)
         ? undefined
         : {
             OR: [
@@ -136,7 +136,7 @@ export const createProgram = async (req: Request, res: Response): Promise<void> 
         res.status(403).json({ message: 'Hanya murabbi halaqoh yang bisa membuat program halaqoh' });
         return;
       }
-    } else if (!canCreateLembagaProgram(req.user!.role)) {
+    } else if (!canCreateLembagaProgram(req.user!.roles)) {
       res.status(403).json({ message: 'Hanya murabbi atau pengurus yang bisa membuat program' });
       return;
     }
