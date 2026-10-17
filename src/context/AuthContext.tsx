@@ -27,7 +27,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
 
     setToken(storedToken)
-    setUser(JSON.parse(storedUser))
+    // Data lama di localStorage (sebelum multi-role) belum punya `roles`
+    const parsed = JSON.parse(storedUser)
+    setUser({ ...parsed, roles: parsed.roles ?? [] })
 
     // Segarkan data user (role bisa berubah sejak login terakhir)
     import('@/services/api')

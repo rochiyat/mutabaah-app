@@ -78,14 +78,17 @@ npm run prisma:seed
 
 ## Roles
 
+`User.roles` is a list: a user can hold several roles at once and their permissions are combined
+(e.g. `["murabbi", "bendahara"]`). An empty list means a regular member.
+
 | Role | Access |
 |------|--------|
 | `superadmin` | Everything, including granting/revoking `superadmin` |
 | `admin` | Manage all users (except superadmins) and all groups |
-| `operator` | App PIC: manage `user`/`murabbi`/`bendahara` accounts (role & active status), all kajian, and institution programs. No access to halaqoh data or other members' mutaba'ah |
+| `operator` | App PIC: manage accounts that only hold `murabbi`/`bendahara` (role & active status), all kajian, and institution programs. No access to halaqoh data or other members' mutaba'ah |
 | `bendahara` | Manage the institution's (lembaga) cash accounts; view all halaqoh cash accounts |
 | `murabbi` | Create groups and manage the groups they lead |
-| `user` | Personal activities plus the activities of every halaqoh they belong to |
+| _(none)_ | Regular member: personal activities plus the activities of every halaqoh they belong to |
 
 ### Halaqoh (groups)
 
@@ -215,7 +218,7 @@ Institution programs are visible to everyone; halaqoh programs to the halaqoh's 
 
 ### Users (superadmin/admin/operator; murabbi and halaqoh murabbi members can list)
 - `GET /api/users?search=` - List users
-- `PATCH /api/users/:id/role` - `{ role }`
+- `PATCH /api/users/:id/roles` - `{ roles: Role[] }` replaces all of the user's roles
 - `PATCH /api/users/:id/status` - `{ isActive }`
 
 ## Database Schema

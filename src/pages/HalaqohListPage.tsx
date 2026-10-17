@@ -33,7 +33,7 @@ export const HalaqohListPage: React.FC = () => {
     <div className="activity-list">
       <div className="page-header">
         <h2>Halaqoh</h2>
-        {canCreateGroupRole(user?.role) && (
+        {canCreateGroupRole(user?.roles) && (
           <button onClick={() => setShowForm(!showForm)} className="btn-primary">
             {showForm ? 'Batal' : 'Buat Halaqoh'}
           </button>

@@ -1,16 +1,17 @@
-export type Role = 'superadmin' | 'admin' | 'operator' | 'bendahara' | 'murabbi' | 'user';
+// Peran tambahan akun; tanpa peran tambahan = anggota biasa
+export type Role = 'superadmin' | 'admin' | 'operator' | 'bendahara' | 'murabbi';
 
 export interface User {
   id: number;
   email: string;
   name: string;
-  role: Role;
+  roles: Role[];
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-export type PublicUser = Pick<User, 'id' | 'email' | 'name' | 'role' | 'isActive'>;
+export type PublicUser = Pick<User, 'id' | 'email' | 'name' | 'roles' | 'isActive'>;
 
 export type GroupMemberRole = 'murabbi' | 'mutarabbi';
 

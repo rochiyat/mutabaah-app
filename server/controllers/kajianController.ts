@@ -37,7 +37,7 @@ export const getKajianList = async (req: Request, res: Response): Promise<void> 
     const user = req.user!;
     // Semua user melihat kajian aktif; pengurus & pembuat juga melihat yang nonaktif
     const list = await prisma.kajian.findMany({
-      where: canManageUsers(user.role)
+      where: canManageUsers(user.roles)
         ? undefined
         : { OR: [{ isActive: true }, { createdById: user.userId }] },
       include: {
@@ -103,7 +103,7 @@ export const getKajian = async (req: Request, res: Response): Promise<void> => {
 
 export const createKajian = async (req: Request, res: Response): Promise<void> => {
   try {
-    if (!canCreateKajian(req.user!.role)) {
+    if (!canCreateKajian(req.user!.roles)) {
       res.status(403).json({ message: 'Hanya murabbi atau pengurus yang bisa membuat kajian' });
       return;
     }

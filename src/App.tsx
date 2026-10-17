@@ -48,7 +48,7 @@ const ProtectedRoute: React.FC<{
     return <Navigate to="/login" />;
   }
 
-  if (roles && !roles.includes(user.role)) {
+  if (roles && !roles.some((r) => user.roles.includes(r))) {
     return <Navigate to="/dashboard" />;
   }
 

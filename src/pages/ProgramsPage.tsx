@@ -34,14 +34,14 @@ export const ProgramsPage: React.FC = () => {
       .then(([p, g]) => {
         setPrograms(p.data)
         setGroups(
-          g.data.filter((x) => x.myRole === 'murabbi' || x.adminId === user?.id || isManagerRole(user?.role))
+          g.data.filter((x) => x.myRole === 'murabbi' || x.adminId === user?.id || isManagerRole(user?.roles))
         )
       })
       .catch((err) => setError(getErrorMessage(err, 'Gagal memuat program')))
       .finally(() => setIsLoading(false))
   }, [user])
 
-  const canLembaga = canCreateKajianRole(user?.role)
+  const canLembaga = canCreateKajianRole(user?.roles)
   const canCreate = canLembaga || groups.length > 0
 
   const handleCreate = async (data: ProgramInput) => {

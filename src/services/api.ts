@@ -180,7 +180,7 @@ export const groupActivityAPI = {
 
 export const userAPI = {
   getUsers: (search?: string) => api.get<User[]>('/users', { params: { search } }),
-  updateRole: (id: number, role: Role) => api.patch<User>(`/users/${id}/role`, { role }),
+  updateRoles: (id: number, roles: Role[]) => api.patch<User>(`/users/${id}/roles`, { roles }),
   updateStatus: (id: number, isActive: boolean) =>
     api.patch<User>(`/users/${id}/status`, { isActive }),
 };

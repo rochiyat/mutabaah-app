@@ -33,7 +33,7 @@ export const KajianListPage: React.FC = () => {
     <div className="activity-list">
       <div className="page-header">
         <h2>Kajian Rutin</h2>
-        {canCreateKajianRole(user?.role) && (
+        {canCreateKajianRole(user?.roles) && (
           <button onClick={() => setShowForm(!showForm)} className="btn-primary">
             {showForm ? 'Batal' : 'Buat Kajian'}
           </button>

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import type { Role, User } from '@/types'
 import { userAPI } from '@/services/api'
 import { useAuth } from '@/hooks/useAuth'
-import { ROLE_LABELS, assignableRolesFor, getErrorMessage } from '@/utils/labels'
+import { ROLE_LABELS, assignableRolesFor, formatRoles, getErrorMessage } from '@/utils/labels'
 
 export const UsersPage: React.FC = () => {
   const { user: me } = useAuth()
@@ -11,7 +11,7 @@ export const UsersPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const assignableRoles = assignableRolesFor(me?.role)
+  const assignableRoles = assignableRolesFor(me?.roles)
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -31,10 +31,13 @@ export const UsersPage: React.FC = () => {
   const replaceUser = (updated: User) =>
     setUsers((prev) => prev.map((u) => (u.id === updated.id ? updated : u)))
 
-  const changeRole = async (target: User, role: Role) => {
+  const toggleRole = async (target: User, role: Role) => {
+    const roles = target.roles.includes(role)
+      ? target.roles.filter((r) => r !== role)
+      : [...target.roles, role]
     setError('')
     try {
-      replaceUser((await userAPI.updateRole(target.id, role)).data)
+      replaceUser((await userAPI.updateRoles(target.id, roles)).data)
     } catch (err) {
       setError(getErrorMessage(err, 'Gagal mengubah role'))
     }
@@ -80,26 +83,30 @@ export const UsersPage: React.FC = () => {
             </thead>
             <tbody>
               {users.map((u) => {
-                // Diri sendiri & role di atas wewenang kita tidak bisa diubah
-                const locked = u.id === me?.id || !assignableRoles.includes(u.role)
+                // Diri sendiri & user dengan role di atas wewenang kita tidak bisa diubah
+                const locked =
+                  u.id === me?.id || !u.roles.every((r) => assignableRoles.includes(r))
                 return (
                   <tr key={u.id} className={u.isActive ? '' : 'inactive'}>
                     <td>{u.name}</td>
                     <td>{u.email}</td>
                     <td>
                       {locked ? (
-                        ROLE_LABELS[u.role]
+                        formatRoles(u.roles)
                       ) : (
-                        <select
-                          value={u.role}
-                          onChange={(e) => changeRole(u, e.target.value as Role)}
-                        >
+                        <div className="role-checks">
                           {assignableRoles.map((r) => (
-                            <option key={r} value={r}>
+                            <label key={r} className="role-check">
+                              <input
+                                type="checkbox"
+                                checked={u.roles.includes(r)}
+                                onChange={() => toggleRole(u, r)}
+                              />
                               {ROLE_LABELS[r]}
-                            </option>
+                            </label>
                           ))}
-                        </select>
+                          {u.roles.length === 0 && <span className="muted">Anggota</span>}
+                        </div>
                       )}
                     </td>
                     <td>

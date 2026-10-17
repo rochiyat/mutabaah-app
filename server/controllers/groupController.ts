@@ -71,7 +71,7 @@ export const getGroups = async (req: Request, res: Response): Promise<void> => {
 
     // Pengurus (superadmin & admin) melihat semua halaqoh, user lain hanya halaqoh yang diikuti
     const groups = await prisma.group.findMany({
-      where: isManager(req.user.role)
+      where: isManager(req.user.roles)
         ? undefined
         : { OR: [{ adminId: userId }, { members: { some: { userId } } }] },
       include: {
@@ -134,7 +134,7 @@ export const createGroup = async (
       return;
     }
 
-    if (!canCreateGroup(req.user.role)) {
+    if (!canCreateGroup(req.user.roles)) {
       res.status(403).json({
         message: 'Hanya murabbi, admin, atau superadmin yang bisa membuat halaqoh',
       });
@@ -196,7 +196,7 @@ export const updateGroup = async (
 
     if (adminId !== undefined && adminId !== access.adminId) {
       // Mengganti penanggung jawab hanya oleh penanggung jawab saat ini atau pengurus
-      if (access.adminId !== req.user.userId && !isManager(req.user.role)) {
+      if (access.adminId !== req.user.userId && !isManager(req.user.roles)) {
         res.status(403).json({
           message: 'Hanya penanggung jawab atau pengurus yang bisa mengganti penanggung jawab',
         });
@@ -248,7 +248,7 @@ export const deleteGroup = async (
     }
 
     // Murabbi pendamping tidak boleh menghapus halaqoh
-    if (access.adminId !== req.user.userId && !isManager(req.user.role)) {
+    if (access.adminId !== req.user.userId && !isManager(req.user.roles)) {
       res.status(403).json({
         message: 'Hanya penanggung jawab atau pengurus yang bisa menghapus halaqoh',
       });

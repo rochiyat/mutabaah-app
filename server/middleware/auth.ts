@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { prisma } from '../utils/prisma'
 import { verifyToken } from '../utils/jwt'
-import { Role } from '../utils/roles'
+import { Role, hasRole, parseRoles } from '../utils/roles'
 
 export const authenticate = async (
   req: Request,
@@ -27,7 +27,7 @@ export const authenticate = async (
     // Ambil role & status terbaru dari DB supaya perubahan role/nonaktif langsung berlaku
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
-      select: { id: true, email: true, role: true, isActive: true },
+      select: { id: true, email: true, roles: true, isActive: true },
     })
 
     if (!user || !user.isActive) {
@@ -35,7 +35,7 @@ export const authenticate = async (
       return
     }
 
-    req.user = { userId: user.id, email: user.email, role: user.role }
+    req.user = { userId: user.id, email: user.email, roles: parseRoles(user.roles) }
     next()
   } catch (error) {
     next(error)
@@ -49,7 +49,7 @@ export const requireRole =
       res.status(401).json({ message: 'Tidak autentik' })
       return
     }
-    if (!(roles as string[]).includes(req.user.role)) {
+    if (!hasRole(req.user.roles, ...roles)) {
       res.status(403).json({ message: 'Akses ditolak' })
       return
     }

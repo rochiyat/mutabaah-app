@@ -127,7 +127,7 @@ export const getAccounts = async (req: Request, res: Response): Promise<void> =>
   try {
     const user = req.user!;
     const accounts = await prisma.financeAccount.findMany({
-      where: isFinanceManager(user.role)
+      where: isFinanceManager(user.roles)
         ? undefined
         : {
             group: {
@@ -181,7 +181,7 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
         res.status(403).json({ message: 'Hanya murabbi halaqoh yang bisa membuat kas halaqoh' });
         return;
       }
-    } else if (!isFinanceManager(req.user!.role)) {
+    } else if (!isFinanceManager(req.user!.roles)) {
       res.status(403).json({ message: 'Hanya bendahara atau pengurus yang bisa membuat kas lembaga' });
       return;
     }

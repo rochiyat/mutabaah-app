@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { prisma } from '../utils/prisma';
 import { generateToken } from '../utils/jwt';
+import { parseRoles } from '../utils/roles';
 
 const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email('Format email tidak valid'),
@@ -35,17 +36,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
-      data: { email, name, password: hashedPassword, role: 'user' },
+      data: { email, name, password: hashedPassword, roles: [] },
     });
 
     const token = generateToken({
       userId: user.id,
       email: user.email,
-      role: user.role,
     });
     const { password: _, ...userWithoutPassword } = user;
 
-    res.status(201).json({ user: userWithoutPassword, token });
+    res.status(201).json({ user: { ...userWithoutPassword, roles: parseRoles(user.roles) }, token });
   } catch (error) {
     res.status(500).json({ message: 'Registrasi gagal' });
   }
@@ -80,11 +80,10 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     const token = generateToken({
       userId: user.id,
       email: user.email,
-      role: user.role,
     });
     const { password: _, ...userWithoutPassword } = user;
 
-    res.json({ user: userWithoutPassword, token });
+    res.json({ user: { ...userWithoutPassword, roles: parseRoles(user.roles) }, token });
   } catch (error) {
     res.status(500).json({ message: 'Login gagal' });
   }
@@ -109,7 +108,7 @@ export const getCurrentUser = async (
     }
 
     const { password: _, ...userWithoutPassword } = user;
-    res.json(userWithoutPassword);
+    res.json({ ...userWithoutPassword, roles: parseRoles(user.roles) });
   } catch (error) {
     res.status(500).json({ message: 'Gagal mengambil data user' });
   }
