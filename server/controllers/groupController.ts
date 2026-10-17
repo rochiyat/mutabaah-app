@@ -16,9 +16,9 @@ const publicUserSelect = {
   id: true,
   email: true,
   name: true,
-  role: true,
+  roles: true,
   isActive: true,
-} as const;
+} satisfies Prisma.UserSelect;
 
 const groupDetailInclude = Prisma.validator<Prisma.GroupInclude>()({
   admin: { select: publicUserSelect },

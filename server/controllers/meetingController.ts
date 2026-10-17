@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { findGroupForAccess } from '../utils/groupAccess';
@@ -19,9 +20,9 @@ const publicUserSelect = {
   id: true,
   email: true,
   name: true,
-  role: true,
+  roles: true,
   isActive: true,
-} as const;
+} satisfies Prisma.UserSelect;
 
 // Ringkasan jumlah per status untuk sekumpulan pertemuan
 export const getAttendanceCounts = async (meetingIds: number[]) => {
