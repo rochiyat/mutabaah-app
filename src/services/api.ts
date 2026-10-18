@@ -37,6 +37,12 @@ import type {
   TransactionInput,
   TransactionList,
   TransactionType,
+  AuditLogPage,
+  ProfileInput,
+  MurabbiNote,
+  MurabbiNoteInput,
+  ActivityTemplate,
+  ActivityTemplateInput,
 } from '@/types';
 
 const api: AxiosInstance = axios.create({
@@ -73,6 +79,7 @@ export const authAPI = {
   getCurrentUser: () => api.get<User>('/auth/me'),
   changePassword: (currentPassword: string, newPassword: string) =>
     api.post<AuthResponse>('/auth/change-password', { currentPassword, newPassword }),
+  updateProfile: (data: ProfileInput) => api.patch<User>('/auth/profile', data),
 };
 
 export const activityAPI = {
@@ -265,6 +272,45 @@ export const programAPI = {
     api.patch(`/programs/${id}/participants/${userId}`, { role }),
   removeParticipant: (id: number, userId: number) =>
     api.delete(`/programs/${id}/participants/${userId}`),
+};
+
+export const auditAPI = {
+  getLogs: (params: {
+    page?: number;
+    entityType?: string;
+    search?: string;
+    start?: string;
+    end?: string;
+  }) => api.get<AuditLogPage>('/audit-logs', { params }),
+};
+
+export const noteAPI = {
+  // Catatan murabbi untuk seorang anggota di sebuah halaqoh
+  getMemberNotes: (groupId: number, memberId: number) =>
+    api.get<{ canManage: boolean; notes: MurabbiNote[] }>(`/groups/${groupId}/notes`, {
+      params: { memberId },
+    }),
+  create: (groupId: number, memberId: number, data: MurabbiNoteInput) =>
+    api.post<MurabbiNote>(`/groups/${groupId}/notes`, { ...data, memberId }),
+  update: (id: number, data: Partial<MurabbiNoteInput>) =>
+    api.patch<MurabbiNote>(`/notes/${id}`, data),
+  remove: (id: number) => api.delete(`/notes/${id}`),
+  // Catatan yang dibagikan murabbi kepada saya
+  getMine: () => api.get<MurabbiNote[]>('/notes/mine'),
+};
+
+export const templateAPI = {
+  getList: () => api.get<ActivityTemplate[]>('/templates'),
+  create: (data: ActivityTemplateInput) => api.post<ActivityTemplate>('/templates', data),
+  update: (id: number, data: Partial<ActivityTemplateInput> & { isActive?: boolean }) =>
+    api.patch<ActivityTemplate>(`/templates/${id}`, data),
+  remove: (id: number) => api.delete(`/templates/${id}`),
+  fromGroup: (groupId: number, name: string, description?: string) =>
+    api.post<ActivityTemplate>('/templates', { fromGroupId: groupId, name, description }),
+  applyToGroup: (groupId: number, templateId: number) =>
+    api.post<{ added: number; skipped: number }>(`/groups/${groupId}/apply-template`, {
+      templateId,
+    }),
 };
 
 export default api;

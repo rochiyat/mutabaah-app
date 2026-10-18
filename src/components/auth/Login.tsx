@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Icon } from '@/components/ui/Icon'
+import { getErrorMessage } from '@/utils/labels'
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -19,8 +20,8 @@ export const Login: React.FC = () => {
     try {
       await login(email, password)
       navigate('/dashboard')
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login gagal')
+    } catch (err) {
+      setError(getErrorMessage(err, 'Login gagal'))
     } finally {
       setIsLoading(false)
     }

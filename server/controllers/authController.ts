@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { prisma } from '../utils/prisma';
 import { generateToken } from '../utils/jwt';
 import { parseRoles } from '../utils/roles';
+import { logError } from '../utils/logger'
 
 const passwordField = z.string().min(8, 'Password minimal 8 karakter').max(100);
 
@@ -23,6 +24,22 @@ const MAX_FAILED_LOGINS = 5;
 const LOCK_MINUTES = 15;
 
 const minutesUntil = (date: Date): number => Math.max(1, Math.ceil((date.getTime() - Date.now()) / 60000));
+
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .nullish()
+    .transform((v) => (v ? v : null));
+
+const profileSchema = z.object({
+  name: z.string().trim().min(2, 'Nama minimal 2 karakter').max(100),
+  email: z.string().trim().toLowerCase().email('Format email tidak valid'),
+  phone: optionalText(30).refine((v) => !v || /^[0-9+()\-\s]{6,30}$/.test(v), 'Nomor HP tidak valid'),
+  bio: optionalText(500),
+  currentPassword: z.string().optional(),
+});
 
 const loginSchema = z.object({
   email: z.string().trim().toLowerCase().email('Format email tidak valid'),
@@ -60,6 +77,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json({ user: { ...userWithoutPassword, roles: parseRoles(user.roles) }, token });
   } catch (error) {
+    logError('authController.register', error)
     res.status(500).json({ message: 'Registrasi gagal' });
   }
 };
@@ -130,6 +148,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
     res.json({ user: { ...userWithoutPassword, roles: parseRoles(user.roles) }, token });
   } catch (error) {
+    logError('authController.login', error)
     res.status(500).json({ message: 'Login gagal' });
   }
 };
@@ -155,6 +174,7 @@ export const getCurrentUser = async (
     const { password: _, ...userWithoutPassword } = user;
     res.json({ ...userWithoutPassword, roles: parseRoles(user.roles) });
   } catch (error) {
+    logError('authController.getCurrentUser', error)
     res.status(500).json({ message: 'Gagal mengambil data user' });
   }
 };
@@ -200,6 +220,49 @@ export const changePassword = async (req: Request, res: Response): Promise<void>
     const { password: _, ...userWithoutPassword } = updated;
     res.json({ user: { ...userWithoutPassword, roles: parseRoles(updated.roles) }, token });
   } catch (error) {
+    logError('authController.changePassword', error)
     res.status(500).json({ message: 'Gagal mengganti password' });
+  }
+};
+
+// Ubah profil sendiri. Mengganti email wajib menyertakan password saat ini.
+export const updateProfile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const parsed = profileSchema.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ message: parsed.error.issues[0].message });
+      return;
+    }
+    const { name, email, phone, bio, currentPassword } = parsed.data;
+
+    const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+    if (!user) {
+      res.status(404).json({ message: 'User tidak ditemukan' });
+      return;
+    }
+
+    if (email !== user.email) {
+      // 400, bukan 401: 401 membuat frontend logout otomatis
+      if (!currentPassword || !(await bcrypt.compare(currentPassword, user.password))) {
+        res.status(400).json({ message: 'Masukkan password saat ini yang benar untuk mengganti email' });
+        return;
+      }
+      const taken = await prisma.user.findUnique({ where: { email } });
+      if (taken) {
+        res.status(400).json({ message: 'Email sudah dipakai akun lain' });
+        return;
+      }
+    }
+
+    const updated = await prisma.user.update({
+      where: { id: user.id },
+      data: { name, email, phone, bio },
+    });
+
+    const { password: _, ...userWithoutPassword } = updated;
+    res.json({ ...userWithoutPassword, roles: parseRoles(updated.roles) });
+  } catch (error) {
+    logError('authController.updateProfile', error);
+    res.status(500).json({ message: 'Gagal menyimpan profil' });
   }
 };

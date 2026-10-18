@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../utils/prisma';
 import { findGroupForAccess } from '../utils/groupAccess';
+import { logError } from '../utils/logger'
 import {
   canCreateGroup,
   canManageGroup,
@@ -91,6 +92,7 @@ export const getGroups = async (req: Request, res: Response): Promise<void> => {
       }))
     );
   } catch (error) {
+    logError('groupController.getGroups', error)
     res.status(500).json({ message: 'Gagal mengambil daftar halaqoh' });
   }
 };
@@ -120,6 +122,7 @@ export const getGroupById = async (
     const group = await getGroupDetail(access.id);
     res.json({ ...group, canManage: canManageGroup(access, req.user) });
   } catch (error) {
+    logError('groupController.getGroupById', error)
     res.status(500).json({ message: 'Gagal mengambil detail halaqoh' });
   }
 };
@@ -159,6 +162,7 @@ export const createGroup = async (
 
     res.status(201).json({ ...group, canManage: true });
   } catch (error) {
+    logError('groupController.createGroup', error)
     res.status(500).json({ message: 'Gagal membuat halaqoh' });
   }
 };
@@ -226,6 +230,7 @@ export const updateGroup = async (
     const group = await getGroupDetail(access.id);
     res.json({ ...group, canManage: true });
   } catch (error) {
+    logError('groupController.updateGroup', error)
     res.status(500).json({ message: 'Gagal mengubah halaqoh' });
   }
 };
@@ -258,6 +263,7 @@ export const deleteGroup = async (
     await prisma.group.delete({ where: { id: access.id } });
     res.json({ message: 'Halaqoh berhasil dihapus' });
   } catch (error) {
+    logError('groupController.deleteGroup', error)
     res.status(500).json({ message: 'Gagal menghapus halaqoh' });
   }
 };
@@ -292,6 +298,7 @@ export const getMembers = async (
 
     res.json(members);
   } catch (error) {
+    logError('groupController.getMembers', error)
     res.status(500).json({ message: 'Gagal mengambil anggota' });
   }
 };
@@ -344,6 +351,7 @@ export const addMember = async (req: Request, res: Response): Promise<void> => {
 
     res.status(201).json(member);
   } catch (error) {
+    logError('groupController.addMember', error)
     res.status(500).json({ message: 'Gagal menambah anggota' });
   }
 };
@@ -400,6 +408,7 @@ export const updateMember = async (
 
     res.json(member);
   } catch (error) {
+    logError('groupController.updateMember', error)
     res.status(500).json({ message: 'Gagal mengubah peran anggota' });
   }
 };
@@ -449,6 +458,7 @@ export const removeMember = async (
 
     res.json({ message: 'Anggota berhasil dikeluarkan' });
   } catch (error) {
+    logError('groupController.removeMember', error)
     res.status(500).json({ message: 'Gagal mengeluarkan anggota' });
   }
 };

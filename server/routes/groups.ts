@@ -2,6 +2,8 @@ import { Router } from 'express';
 import * as groupController from '../controllers/groupController';
 import * as groupActivityController from '../controllers/groupActivityController';
 import * as meetingController from '../controllers/meetingController';
+import * as noteController from '../controllers/noteController';
+import * as templateController from '../controllers/templateController';
 import { authenticate } from '../middleware/auth';
 
 const router = Router();
@@ -32,6 +34,12 @@ router.delete(
   '/:groupId/activities/:activityId',
   groupActivityController.removeActivity
 );
+
+router.post('/:groupId/apply-template', templateController.applyTemplate);
+
+// Catatan / evaluasi murabbi untuk anggota (ubah & hapus: lihat /api/notes)
+router.get('/:groupId/notes', noteController.getGroupNotes);
+router.post('/:groupId/notes', noteController.createNote);
 
 // Pertemuan halaqoh (detail, absensi: lihat /api/meetings)
 router.get('/:groupId/meetings', meetingController.getGroupMeetings);

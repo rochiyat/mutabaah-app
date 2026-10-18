@@ -43,7 +43,9 @@ export const assignableRolesFor = (roles?: Role[]): Role[] => {
   return []
 }
 
+// Pesan error untuk ditampilkan; error aslinya dicatat ke console untuk pelacakan
 export const getErrorMessage = (err: unknown, fallback: string): string => {
+  console.error(`${fallback}:`, err)
   const anyErr = err as { response?: { data?: { message?: string } } }
   return anyErr?.response?.data?.message || fallback
 }

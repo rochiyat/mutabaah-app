@@ -10,6 +10,8 @@ interface AuthContextType {
   logout: () => void
   // Simpan sesi baru (misal setelah ganti password)
   setSession: (session: AuthResponse) => void
+  // Perbarui data user tanpa mengganti token (misal setelah edit profil)
+  updateUser: (user: User) => void
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -40,8 +42,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         setUser(response.data)
         localStorage.setItem('user', JSON.stringify(response.data))
       })
-      .catch(() => {
+      .catch((err) => {
         // Token tidak valid ditangani interceptor (redirect ke login)
+        console.error('Gagal memuat data user:', err)
       })
       .finally(() => setIsLoading(false))
   }, [])
@@ -73,6 +76,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     localStorage.setItem('user', JSON.stringify(newUser))
   }
 
+  const updateUser = (newUser: User) => {
+    setUser(newUser)
+    localStorage.setItem('user', JSON.stringify(newUser))
+  }
+
   const logout = () => {
     setUser(null)
     setToken(null)
@@ -81,7 +89,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }
 
   return (
-    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, setSession }}>
+    <AuthContext.Provider value={{ user, token, isLoading, login, register, logout, setSession, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

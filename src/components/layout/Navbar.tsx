@@ -25,10 +25,10 @@ export const Navbar: React.FC = () => {
       <div className="nav-links">
         {user && (
           <>
-            <span className="user-chip">
+            <Link to="/profil" className="user-chip" title="Profil saya">
               <span className="avatar">{user.name.charAt(0).toUpperCase()}</span>
               <span className="user-name">{user.name}</span>
-            </span>
+            </Link>
             <Link to="/ganti-password" className="nav-link" title="Ganti Password">
               <Icon name="key" size={18} />
               <span className="nav-label">Ganti Password</span>

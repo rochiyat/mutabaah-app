@@ -14,6 +14,7 @@ import {
 import { sumByType, toNumber } from '../utils/money';
 import { dateKeyToDb, isDateKey, toDateKey } from '../utils/date';
 import { sendValidationError } from '../utils/meetingSchema';
+import { logError } from '../utils/logger';
 
 const optionalText = (max: number) =>
   z
@@ -117,6 +118,7 @@ export const getPrograms = async (req: Request, res: Response): Promise<void> =>
       }))
     );
   } catch (error) {
+    logError('programController.getPrograms', error);
     res.status(500).json({ message: 'Gagal mengambil daftar program' });
   }
 };
@@ -154,6 +156,7 @@ export const createProgram = async (req: Request, res: Response): Promise<void> 
     });
     res.status(201).json(serializeProgram(program));
   } catch (error) {
+    logError('programController.createProgram', error);
     res.status(500).json({ message: 'Gagal membuat program' });
   }
 };
@@ -219,6 +222,7 @@ export const getProgram = async (req: Request, res: Response): Promise<void> => 
       canManage,
     });
   } catch (error) {
+    logError('programController.getProgram', error);
     res.status(500).json({ message: 'Gagal mengambil program' });
   }
 };
@@ -258,6 +262,7 @@ export const updateProgram = async (req: Request, res: Response): Promise<void> 
     });
     res.json(serializeProgram(program));
   } catch (error) {
+    logError('programController.updateProgram', error);
     res.status(500).json({ message: 'Gagal mengubah program' });
   }
 };
@@ -278,6 +283,7 @@ export const deleteProgram = async (req: Request, res: Response): Promise<void> 
     await prisma.program.delete({ where: { id: access.id } });
     res.json({ message: 'Program dihapus' });
   } catch (error) {
+    logError('programController.deleteProgram', error);
     res.status(500).json({ message: 'Gagal menghapus program' });
   }
 };
@@ -321,6 +327,7 @@ export const addParticipant = async (req: Request, res: Response): Promise<void>
     });
     res.status(201).json(participant);
   } catch (error: any) {
+    logError('programController.addParticipant', error);
     if (error.code === 'P2002') {
       res.status(409).json({ message: 'Sudah terdaftar di program ini' });
     } else {
@@ -357,6 +364,7 @@ export const updateParticipant = async (req: Request, res: Response): Promise<vo
     }
     res.json({ message: 'Peran diperbarui' });
   } catch (error) {
+    logError('programController.updateParticipant', error);
     res.status(500).json({ message: 'Gagal mengubah peran peserta' });
   }
 };
@@ -384,6 +392,7 @@ export const removeParticipant = async (req: Request, res: Response): Promise<vo
     }
     res.json({ message: 'Peserta dikeluarkan' });
   } catch (error) {
+    logError('programController.removeParticipant', error);
     res.status(500).json({ message: 'Gagal mengeluarkan peserta' });
   }
 };

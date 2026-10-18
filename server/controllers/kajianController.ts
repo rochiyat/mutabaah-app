@@ -5,6 +5,7 @@ import { canCreateKajian, canManageKajian, canManageUsers } from '../utils/roles
 import { meetingSchema, sendValidationError } from '../utils/meetingSchema';
 import { dateKeyToDb, toDateKey } from '../utils/date';
 import { getAttendanceCounts } from './meetingController';
+import { logError } from '../utils/logger';
 
 const optionalText = z
   .string()
@@ -59,6 +60,7 @@ export const getKajianList = async (req: Request, res: Response): Promise<void> 
       }))
     );
   } catch (error) {
+    logError('kajianController.getKajianList', error);
     res.status(500).json({ message: 'Gagal mengambil daftar kajian' });
   }
 };
@@ -97,6 +99,7 @@ export const getKajian = async (req: Request, res: Response): Promise<void> => {
       })),
     });
   } catch (error) {
+    logError('kajianController.getKajian', error);
     res.status(500).json({ message: 'Gagal mengambil kajian' });
   }
 };
@@ -120,6 +123,7 @@ export const createKajian = async (req: Request, res: Response): Promise<void> =
 
     res.status(201).json({ ...kajian, canManage: true });
   } catch (error) {
+    logError('kajianController.createKajian', error);
     res.status(500).json({ message: 'Gagal membuat kajian' });
   }
 };
@@ -149,6 +153,7 @@ export const updateKajian = async (req: Request, res: Response): Promise<void> =
 
     res.json({ ...updated, canManage: true });
   } catch (error) {
+    logError('kajianController.updateKajian', error);
     res.status(500).json({ message: 'Gagal mengubah kajian' });
   }
 };
@@ -168,6 +173,7 @@ export const deleteKajian = async (req: Request, res: Response): Promise<void> =
     await prisma.kajian.delete({ where: { id: kajian.id } });
     res.json({ message: 'Kajian berhasil dihapus' });
   } catch (error) {
+    logError('kajianController.deleteKajian', error);
     res.status(500).json({ message: 'Gagal menghapus kajian' });
   }
 };
@@ -204,6 +210,7 @@ export const createKajianMeeting = async (req: Request, res: Response): Promise<
 
     res.status(201).json({ ...meeting, date: toDateKey(meeting.date) });
   } catch (error) {
+    logError('kajianController.createKajianMeeting', error);
     res.status(500).json({ message: 'Gagal membuat sesi kajian' });
   }
 };

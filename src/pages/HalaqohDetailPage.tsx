@@ -9,6 +9,7 @@ import type {
   User,
 } from '@/types'
 import { groupAPI, groupActivityAPI } from '@/services/api'
+import { TemplatePicker } from '@/components/templates/TemplatePicker'
 import { useAuth } from '@/hooks/useAuth'
 import { GroupForm } from '@/components/halaqoh/GroupForm'
 import { UserPicker } from '@/components/users/UserPicker'
@@ -311,7 +312,15 @@ export const HalaqohDetailPage: React.FC = () => {
                       )}
                     </td>
                     {group.canManage && (
-                      <td>
+                      <td className="actions">
+                        {m.role === 'mutarabbi' && (
+                          <Link
+                            className="btn-small"
+                            to={`/laporan/anggota/${m.userId}?groupId=${group.id}#catatan`}
+                          >
+                            Laporan & Catatan
+                          </Link>
+                        )}
                         {!isAdmin && (
                           <button
                             className="btn-danger btn-small"
@@ -341,6 +350,15 @@ export const HalaqohDetailPage: React.FC = () => {
         <p className="muted">
           Amalan ini otomatis muncul di checklist harian semua anggota halaqoh.
         </p>
+
+        {group.canManage && (
+          <TemplatePicker
+            groupId={group.id}
+            groupName={group.name}
+            hasActivities={group.activities.length > 0}
+            onApplied={load}
+          />
+        )}
 
         {group.canManage && (
           <form onSubmit={handleAddActivity} className="activity-form form-grid">

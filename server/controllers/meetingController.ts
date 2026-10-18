@@ -15,6 +15,7 @@ import {
 } from '../utils/meetingSchema';
 import { canManageGroup, canViewGroup } from '../utils/roles';
 import { dateKeyToDb, localDateKey, toDateKey } from '../utils/date';
+import { logError } from '../utils/logger';
 
 const publicUserSelect = {
   id: true,
@@ -74,6 +75,7 @@ export const getGroupMeetings = async (req: Request, res: Response): Promise<voi
       meetings.map((m) => ({ ...serializeMeeting(m), counts: countsFor(m.id) }))
     );
   } catch (error) {
+    logError('meetingController.getGroupMeetings', error);
     res.status(500).json({ message: 'Gagal mengambil pertemuan' });
   }
 };
@@ -107,6 +109,7 @@ export const createGroupMeeting = async (req: Request, res: Response): Promise<v
 
     res.status(201).json(serializeMeeting(meeting));
   } catch (error) {
+    logError('meetingController.createGroupMeeting', error);
     res.status(500).json({ message: 'Gagal membuat pertemuan' });
   }
 };
@@ -175,6 +178,7 @@ export const getMeeting = async (req: Request, res: Response): Promise<void> => 
           : !!kajian?.isActive),
     });
   } catch (error) {
+    logError('meetingController.getMeeting', error);
     res.status(500).json({ message: 'Gagal mengambil pertemuan' });
   }
 };
@@ -205,6 +209,7 @@ export const updateMeeting = async (req: Request, res: Response): Promise<void> 
 
     res.json(serializeMeeting(meeting));
   } catch (error) {
+    logError('meetingController.updateMeeting', error);
     res.status(500).json({ message: 'Gagal mengubah pertemuan' });
   }
 };
@@ -224,6 +229,7 @@ export const deleteMeeting = async (req: Request, res: Response): Promise<void> 
     await prisma.meeting.delete({ where: { id: access.id } });
     res.json({ message: 'Pertemuan berhasil dihapus' });
   } catch (error) {
+    logError('meetingController.deleteMeeting', error);
     res.status(500).json({ message: 'Gagal menghapus pertemuan' });
   }
 };
@@ -292,6 +298,7 @@ export const saveAttendance = async (req: Request, res: Response): Promise<void>
 
     res.json({ message: 'Absensi tersimpan', saved: entries.length });
   } catch (error) {
+    logError('meetingController.saveAttendance', error);
     res.status(500).json({ message: 'Gagal menyimpan absensi' });
   }
 };
@@ -313,6 +320,7 @@ export const removeAttendance = async (req: Request, res: Response): Promise<voi
     });
     res.json({ message: 'Data kehadiran dihapus' });
   } catch (error) {
+    logError('meetingController.removeAttendance', error);
     res.status(500).json({ message: 'Gagal menghapus data kehadiran' });
   }
 };
@@ -351,6 +359,7 @@ export const checkIn = async (req: Request, res: Response): Promise<void> => {
 
     res.json(attendance);
   } catch (error) {
+    logError('meetingController.checkIn', error);
     res.status(500).json({ message: 'Gagal absen' });
   }
 };

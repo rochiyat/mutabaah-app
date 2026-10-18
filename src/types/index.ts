@@ -5,6 +5,8 @@ export interface User {
   id: number;
   email: string;
   name: string;
+  phone?: string | null;
+  bio?: string | null;
   roles: Role[];
   isActive: boolean;
   // true setelah password di-reset pengurus
@@ -443,4 +445,96 @@ export interface ProgramDetail extends Program {
   finance: MoneyTotals & { budget: number | null; realization: number };
   transactions: Transaction[];
   myParticipation: ProgramParticipant | null;
+}
+
+// ===== Log aktivitas pengurus =====
+
+export interface AuditLogEntry {
+  id: number;
+  actorId: number | null;
+  actor: { id: number; name: string; email: string } | null;
+  action: string;
+  summary: string;
+  method: string;
+  path: string;
+  entityType: string | null;
+  entityId: number | null;
+  metadata: Record<string, unknown> | null;
+  ip: string | null;
+  createdAt: string;
+}
+
+export interface AuditLogPage {
+  items: AuditLogEntry[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
+// ===== Profil =====
+
+export interface ProfileInput {
+  name: string;
+  email: string;
+  phone?: string | null;
+  bio?: string | null;
+  // Wajib diisi jika email diganti
+  currentPassword?: string;
+}
+
+// ===== Catatan murabbi =====
+
+export type NoteCategory = 'catatan' | 'evaluasi' | 'apresiasi';
+export type NoteVisibility = 'private' | 'shared';
+
+export interface MurabbiNote {
+  id: number;
+  groupId: number;
+  memberId: number;
+  authorId: number | null;
+  author: { id: number; name: string } | null;
+  group?: { id: number; name: string };
+  date: string;
+  category: NoteCategory;
+  content: string;
+  visibility: NoteVisibility;
+  createdAt: string;
+  updatedAt: string;
+  canEdit?: boolean;
+}
+
+export interface MurabbiNoteInput {
+  date: string;
+  category: NoteCategory;
+  content: string;
+  visibility: NoteVisibility;
+}
+
+// ===== Template amalan =====
+
+export interface TemplateItem {
+  name: string;
+  category: string;
+  target: number;
+  unit: string;
+  isRequired: boolean;
+}
+
+export interface ActivityTemplate {
+  id: number;
+  name: string;
+  description?: string | null;
+  items: TemplateItem[];
+  isActive: boolean;
+  createdById: number | null;
+  createdBy?: { id: number; name: string } | null;
+  canManage: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ActivityTemplateInput {
+  name: string;
+  description?: string | null;
+  items: TemplateItem[];
 }

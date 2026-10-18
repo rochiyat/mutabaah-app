@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { findGroupForAccess as findGroup } from '../utils/groupAccess';
 import { canManageGroup, canViewGroup } from '../utils/roles';
+import { logError } from '../utils/logger';
 
 export const getGroupActivities = async (
   req: Request,
@@ -34,6 +35,7 @@ export const getGroupActivities = async (
 
     res.json(activities);
   } catch (error) {
+    logError('groupActivityController.getGroupActivities', error);
     res.status(500).json({ message: 'Gagal mengambil aktivitas grup' });
   }
 };
@@ -109,6 +111,7 @@ export const addActivity = async (
 
     res.status(201).json(groupActivity);
   } catch (error: any) {
+    logError('groupActivityController.addActivity', error);
     if (error.code === 'P2002') {
       res.status(400).json({ message: 'Amalan sudah ada di halaqoh ini' });
     } else {
@@ -154,6 +157,7 @@ export const removeActivity = async (
 
     res.json({ message: 'Aktivitas berhasil dihapus dari grup' });
   } catch (error) {
+    logError('groupActivityController.removeActivity', error);
     res.status(500).json({ message: 'Gagal menghapus aktivitas dari grup' });
   }
 };
@@ -218,6 +222,7 @@ export const updateActivity = async (
 
     res.json(updated);
   } catch (error) {
+    logError('groupActivityController.updateActivity', error);
     res.status(500).json({ message: 'Gagal mengupdate aktivitas' });
   }
 };

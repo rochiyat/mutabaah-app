@@ -7,6 +7,7 @@ import { defaultPeriod } from '@/utils/period'
 import { PeriodPicker } from '@/components/reports/PeriodPicker'
 import { ReportToolbar } from '@/components/reports/ReportToolbar'
 import { UserMutabaahView } from '@/components/reports/UserMutabaahView'
+import { MurabbiNotes } from '@/components/notes/MurabbiNotes'
 
 export const MemberReportPage: React.FC = () => {
   const { userId } = useParams()
@@ -66,6 +67,10 @@ export const MemberReportPage: React.FC = () => {
 
       {error && <div className="error">{error}</div>}
       {isLoading ? <div className="loading">Memuat...</div> : report && <UserMutabaahView report={report} />}
+
+      {groupId && (
+        <MurabbiNotes groupId={groupId} memberId={Number(userId)} memberName={report?.user.name} />
+      )}
     </div>
   )
 }

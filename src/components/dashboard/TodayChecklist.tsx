@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Activity, ActivityRecord } from '@/types';
 import { activityAPI, recordAPI } from '@/services/api';
-import { formatDate, shiftDateKey, todayKey } from '@/utils/labels';
+import { formatDate, getErrorMessage, shiftDateKey, todayKey } from '@/utils/labels';
 
 export const TodayChecklist: React.FC = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
@@ -45,8 +45,8 @@ export const TodayChecklist: React.FC = () => {
       }
 
       await fetchRecords(selectedDate);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Gagal menyimpan laporan');
+    } catch (err) {
+      setError(getErrorMessage(err, 'Gagal menyimpan laporan'));
     }
   };
 

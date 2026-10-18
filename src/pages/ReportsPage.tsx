@@ -67,7 +67,7 @@ export const ReportsPage: React.FC = () => {
         )
         setKajianList(k.data.filter((x) => x.canManage))
       })
-      .catch(() => undefined)
+      .catch((err) => console.error('Gagal memuat halaqoh/kajian:', err))
   }, [user])
 
   const options = tab === 'kajian' ? kajianList : tab === 'saya' ? [] : groups

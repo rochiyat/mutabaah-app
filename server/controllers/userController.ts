@@ -2,6 +2,7 @@ import { randomInt } from 'crypto'
 import bcrypt from 'bcryptjs'
 import { Request, Response } from 'express'
 import { prisma } from '../utils/prisma'
+import { logError } from '../utils/logger'
 import {
   assignableRoles,
   canCreateGroup,
@@ -54,6 +55,7 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
 
     res.json(users.map(toPublic))
   } catch (error) {
+    logError('userController.getUsers', error)
     res.status(500).json({ message: 'Gagal mengambil daftar user' })
   }
 }
@@ -98,6 +100,7 @@ export const updateRoles = async (req: Request, res: Response): Promise<void> =>
 
     res.json(toPublic(updated))
   } catch (error) {
+    logError('userController.updateRoles', error)
     res.status(500).json({ message: 'Gagal mengubah role' })
   }
 }
@@ -136,6 +139,7 @@ export const updateStatus = async (req: Request, res: Response): Promise<void> =
 
     res.json(toPublic(updated))
   } catch (error) {
+    logError('userController.updateStatus', error)
     res.status(500).json({ message: 'Gagal mengubah status user' })
   }
 }
@@ -184,6 +188,7 @@ export const resetPassword = async (req: Request, res: Response): Promise<void> 
 
     res.json({ user: toPublic(updated), temporaryPassword })
   } catch (error) {
+    logError('userController.resetPassword', error)
     res.status(500).json({ message: 'Gagal me-reset password' })
   }
 }

@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { activityAPI } from '@/services/api'
+import { getErrorMessage } from '@/utils/labels'
 
 interface ActivityFormProps {
   onSuccess: () => void
@@ -25,8 +26,8 @@ export const ActivityForm: React.FC<ActivityFormProps> = ({ onSuccess }) => {
       setTarget('1')
       setUnit('kali')
       onSuccess()
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Gagal membuat aktivitas')
+    } catch (err) {
+      setError(getErrorMessage(err, 'Gagal membuat aktivitas'))
     } finally {
       setIsLoading(false)
     }

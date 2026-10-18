@@ -12,6 +12,7 @@ import {
 } from '../utils/date';
 import { parsePeriod, percent, ReportPeriod } from '../utils/reportPeriod';
 import { sendWorkbook, SheetSpec } from '../utils/excel';
+import { logError } from '../utils/logger';
 
 type ReportActivity = {
   id: number;
@@ -231,6 +232,7 @@ export const groupMutabaah = async (req: Request, res: Response): Promise<void> 
     ];
     await sendWorkbook(res, `mutabaah-${group.name}-${period.start}-${period.end}.xlsx`, sheets);
   } catch (error) {
+    logError('reportController.groupMutabaah', error);
     res.status(500).json({ message: 'Gagal membuat laporan mutabaah' });
   }
 };
@@ -440,6 +442,7 @@ export const groupAttendance = async (req: Request, res: Response): Promise<void
       attendanceSheets([`Rekap Kehadiran - ${group.name}`, periodLabel(period)], report, true)
     );
   } catch (error) {
+    logError('reportController.groupAttendance', error);
     res.status(500).json({ message: 'Gagal membuat laporan kehadiran' });
   }
 };
@@ -472,6 +475,7 @@ export const kajianAttendance = async (req: Request, res: Response): Promise<voi
       attendanceSheets([`Rekap Kehadiran Kajian - ${kajian.title}`, periodLabel(period)], report, false)
     );
   } catch (error) {
+    logError('reportController.kajianAttendance', error);
     res.status(500).json({ message: 'Gagal membuat laporan kehadiran kajian' });
   }
 };
@@ -609,6 +613,7 @@ export const userMutabaah = async (req: Request, res: Response): Promise<void> =
       },
     ]);
   } catch (error) {
+    logError('reportController.userMutabaah', error);
     res.status(500).json({ message: 'Gagal membuat laporan anggota' });
   }
 };

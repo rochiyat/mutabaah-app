@@ -14,6 +14,10 @@ import meetingRoutes from './routes/meetings';
 import reportRoutes from './routes/reports';
 import financeRoutes from './routes/finance';
 import programRoutes from './routes/programs';
+import auditRoutes from './routes/audit';
+import noteRoutes from './routes/notes';
+import templateRoutes from './routes/templates';
+import { auditTrail } from './middleware/audit';
 import { errorHandler } from './middleware/errorHandler';
 import { assertJwtSecret } from './utils/jwt';
 
@@ -35,6 +39,9 @@ if (trustProxy) {
 app.use(cors());
 app.use(express.json());
 
+// Catat aktivitas pengurus (dicatat setelah respons sukses)
+app.use('/api', auditTrail);
+
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/activities', activityRoutes);
@@ -47,6 +54,9 @@ app.use('/api/meetings', meetingRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/programs', programRoutes);
+app.use('/api/audit-logs', auditRoutes);
+app.use('/api/notes', noteRoutes);
+app.use('/api/templates', templateRoutes);
 
 // Endpoint API yang tidak dikenal jangan jatuh ke SPA fallback
 app.use('/api', (_req, res) => {

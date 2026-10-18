@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { prisma } from '../utils/prisma';
 import { CreateActivityDTO, UpdateActivityDTO } from '../types';
 import { getUserActivities } from '../utils/activityAccess';
+import { logError } from '../utils/logger';
 
 export const getActivities = async (
   req: Request,
@@ -16,6 +17,7 @@ export const getActivities = async (
     const allActivities = await getUserActivities(req.user.userId);
     res.json(allActivities);
   } catch (error) {
+    logError('activityController.getActivities', error);
     res.status(500).json({ message: 'Gagal mengambil aktivitas' });
   }
 };
@@ -44,6 +46,7 @@ export const createActivity = async (
 
     res.status(201).json(activity);
   } catch (error) {
+    logError('activityController.createActivity', error);
     res.status(500).json({ message: 'Gagal membuat aktivitas' });
   }
 };
@@ -77,6 +80,7 @@ export const updateActivity = async (
 
     res.json(updated);
   } catch (error) {
+    logError('activityController.updateActivity', error);
     res.status(500).json({ message: 'Gagal mengupdate aktivitas' });
   }
 };
@@ -104,6 +108,7 @@ export const deleteActivity = async (
     await prisma.activity.delete({ where: { id: parseInt(id) } });
     res.json({ message: 'Aktivitas berhasil dihapus' });
   } catch (error) {
+    logError('activityController.deleteActivity', error);
     res.status(500).json({ message: 'Gagal menghapus aktivitas' });
   }
 };

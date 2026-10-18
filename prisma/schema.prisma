@@ -8,22 +8,25 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  name      String
-  password  String
+  id                  Int       @id @default(autoincrement())
+  email               String    @unique
+  name                String
+  // Data profil opsional yang bisa diubah sendiri oleh user
+  phone               String?
+  bio                 String?   @db.Text
+  password            String
   // Peran tambahan (JSON array), misal ["murabbi","bendahara"]; [] = anggota biasa
-  roles     Json
-  isActive  Boolean  @default(true)
+  roles               Json
+  isActive            Boolean   @default(true)
   // true setelah password di-reset pengurus: user wajib ganti password saat login
-  mustChangePassword Boolean   @default(false)
+  mustChangePassword  Boolean   @default(false)
   // Token yang dibuat sebelum waktu ini dianggap tidak berlaku
-  passwordChangedAt  DateTime?
+  passwordChangedAt   DateTime?
   // Pembatasan login: akun dikunci sementara setelah beberapa kali password salah
   failedLoginAttempts Int       @default(0)
   lockedUntil         DateTime?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   memberships            GroupMember[]
   adminGroups            Group[]              @relation("GroupAdmin")
@@ -39,6 +42,10 @@ model User {
   programsLed            Program[]            @relation("ProgramPic")
   programsCreated        Program[]            @relation("ProgramCreator")
   programParticipations  ProgramParticipant[]
+  auditLogs              AuditLog[]           @relation("AuditActor")
+  notesWritten           MurabbiNote[]        @relation("NoteAuthor")
+  notesReceived          MurabbiNote[]        @relation("NoteMember")
+  templatesCreated       ActivityTemplate[]   @relation("TemplateCreator")
 }
 
 // Group = halaqoh / kelompok binaan. adminId = murabbi penanggung jawab.
@@ -60,6 +67,7 @@ model Group {
   meetings        Meeting[]
   financeAccounts FinanceAccount[]
   programs        Program[]
+  murabbiNotes    MurabbiNote[]
 
   @@index([adminId])
 }
@@ -301,4 +309,66 @@ model ProgramParticipant {
 
   @@unique([programId, userId])
   @@index([userId])
+}
+
+// Jejak aktivitas pengurus (kelola user, halaqoh, kajian, keuangan, program, dll.)
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  actorId    Int?
+  action     String // mis. "users.updateRoles"
+  summary    String // keterangan singkat, mis. "Ubah role user"
+  method     String
+  path       String   @db.VarChar(500)
+  entityType String?
+  entityId   Int?
+  // Parameter & isi permintaan (tanpa field sensitif seperti password)
+  metadata   Json?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([actorId])
+  @@index([entityType, entityId])
+}
+
+// Catatan / evaluasi murabbi untuk seorang anggota halaqoh.
+// visibility: "private" (hanya murabbi & pengurus) | "shared" (anggota yang bersangkutan ikut melihat)
+model MurabbiNote {
+  id         Int      @id @default(autoincrement())
+  groupId    Int
+  memberId   Int
+  authorId   Int?
+  date       DateTime @db.Date
+  category   String   @default("catatan") // catatan | evaluasi | apresiasi
+  content    String   @db.Text
+  visibility String   @default("private")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  group  Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  member User  @relation("NoteMember", fields: [memberId], references: [id], onDelete: Cascade)
+  author User? @relation("NoteAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([groupId, memberId, date])
+  @@index([memberId])
+  @@index([authorId])
+}
+
+// Template paket amalan & target yang bisa dipasang ke halaqoh.
+// items: [{ name, category, target, unit, isRequired }]
+model ActivityTemplate {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String?  @db.Text
+  items       Json
+  isActive    Boolean  @default(true)
+  createdById Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User? @relation("TemplateCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([createdById])
 }

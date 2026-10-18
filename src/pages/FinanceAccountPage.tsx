@@ -36,7 +36,7 @@ export const FinanceAccountPage: React.FC = () => {
     programAPI
       .getList()
       .then((r) => setPrograms(r.data.filter((p) => p.status !== 'batal')))
-      .catch(() => undefined)
+      .catch((err) => console.error('Gagal memuat program:', err))
   }, [load])
 
   if (isLoading) return <div className="loading">Memuat...</div>

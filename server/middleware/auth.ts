@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express'
 import { prisma } from '../utils/prisma'
 import { verifyToken } from '../utils/jwt'
 import { Role, hasRole, parseRoles } from '../utils/roles'
+import { logError, logWarn } from '../utils/logger'
 
 export const authenticate = async (
   req: Request,
@@ -19,6 +20,7 @@ export const authenticate = async (
   try {
     decoded = verifyToken(token)
   } catch (error) {
+    logWarn('auth.authenticate', `Token tidak valid: ${(error as Error).message}`)
     res.status(401).json({ message: 'Token tidak valid' })
     return
   }
@@ -61,6 +63,7 @@ export const authenticate = async (
     req.user = { userId: user.id, email: user.email, roles: parseRoles(user.roles) }
     next()
   } catch (error) {
+    logError('auth.authenticate', error)
     next(error)
   }
 }

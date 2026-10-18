@@ -3,6 +3,7 @@ import { prisma } from '../utils/prisma'
 import { addDays, startOfWeek, startOfMonth, endOfMonth, differenceInCalendarDays, subDays } from 'date-fns'
 import { getUserActivities } from '../utils/activityAccess'
 import { dateKeyToDb, localDateKey, toDateKey } from '../utils/date'
+import { logError } from '../utils/logger'
 
 const STREAK_LOOKBACK_DAYS = 366
 
@@ -61,6 +62,7 @@ export const getDashboardStats = async (req: Request, res: Response): Promise<vo
       totalActivities: activities.length,
     })
   } catch (error) {
+    logError('statsController.getDashboardStats', error)
     res.status(500).json({ message: 'Gagal mengambil statistik' })
   }
 }
@@ -98,6 +100,7 @@ export const getWeeklyStats = async (req: Request, res: Response): Promise<void>
 
     res.json(stats)
   } catch (error) {
+    logError('statsController.getWeeklyStats', error)
     res.status(500).json({ message: 'Gagal mengambil statistik mingguan' })
   }
 }
@@ -145,6 +148,7 @@ export const getMonthlyStats = async (req: Request, res: Response): Promise<void
 
     res.json(stats)
   } catch (error) {
+    logError('statsController.getMonthlyStats', error)
     res.status(500).json({ message: 'Gagal mengambil statistik bulanan' })
   }
 }

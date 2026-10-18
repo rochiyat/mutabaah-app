@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
 import { Icon } from '@/components/ui/Icon'
+import { getErrorMessage } from '@/utils/labels'
 
 export const Register: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -20,8 +21,8 @@ export const Register: React.FC = () => {
     try {
       await register(email, name, password)
       navigate('/dashboard')
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Registrasi gagal')
+    } catch (err) {
+      setError(getErrorMessage(err, 'Registrasi gagal'))
     } finally {
       setIsLoading(false)
     }

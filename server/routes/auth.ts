@@ -27,6 +27,7 @@ const changePasswordLimiter = rateLimit({
 router.post('/register', registerLimiter, authController.register)
 router.post('/login', loginLimiter, authController.login)
 router.get('/me', authenticate, authController.getCurrentUser)
+router.patch('/profile', authenticate, authController.updateProfile)
 router.post('/change-password', changePasswordLimiter, authenticate, authController.changePassword)
 
 export default router

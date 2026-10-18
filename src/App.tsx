@@ -26,6 +26,10 @@ import { FinanceAccountPage } from '@/pages/FinanceAccountPage';
 import { ProgramsPage } from '@/pages/ProgramsPage';
 import { ProgramDetailPage } from '@/pages/ProgramDetailPage';
 import { ChangePasswordPage } from '@/pages/ChangePasswordPage';
+import { ProfilePage } from '@/pages/ProfilePage';
+import { AuditLogPage } from '@/pages/AuditLogPage';
+import { TemplatesPage } from '@/pages/TemplatesPage';
+import { HijriCalendarPage } from '@/pages/HijriCalendarPage';
 import type { Role } from '@/types';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
@@ -186,6 +190,38 @@ const AppContent: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <ProgramDetailPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profil"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/kalender"
+              element={
+                <ProtectedRoute>
+                  <HijriCalendarPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/template-amalan"
+              element={
+                <ProtectedRoute>
+                  <TemplatesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/log-aktivitas"
+              element={
+                <ProtectedRoute roles={['superadmin', 'admin']}>
+                  <AuditLogPage />
                 </ProtectedRoute>
               }
             />

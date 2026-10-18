@@ -15,6 +15,7 @@ import { dateKeyToDb, isDateKey, localDateKey, toDateKey } from '../utils/date';
 import { parsePeriod } from '../utils/reportPeriod';
 import { sendValidationError } from '../utils/meetingSchema';
 import { sendWorkbook } from '../utils/excel';
+import { logError } from '../utils/logger';
 
 const optionalText = (max: number) =>
   z
@@ -162,6 +163,7 @@ export const getAccounts = async (req: Request, res: Response): Promise<void> =>
       })
     );
   } catch (error) {
+    logError('financeController.getAccounts', error);
     res.status(500).json({ message: 'Gagal mengambil daftar kas' });
   }
 };
@@ -197,6 +199,7 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
 
     res.status(201).json({ ...account, openingBalance: toNumber(account.openingBalance) });
   } catch (error) {
+    logError('financeController.createAccount', error);
     res.status(500).json({ message: 'Gagal membuat kas' });
   }
 };
@@ -223,6 +226,7 @@ export const getAccount = async (req: Request, res: Response): Promise<void> => 
       canManage: canManageAccount(account, req.user!),
     });
   } catch (error) {
+    logError('financeController.getAccount', error);
     res.status(500).json({ message: 'Gagal mengambil kas' });
   }
 };
@@ -244,6 +248,7 @@ export const updateAccount = async (req: Request, res: Response): Promise<void> 
     });
     res.json({ ...updated, openingBalance: toNumber(updated.openingBalance) });
   } catch (error) {
+    logError('financeController.updateAccount', error);
     res.status(500).json({ message: 'Gagal mengubah kas' });
   }
 };
@@ -265,6 +270,7 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
     await prisma.financeAccount.delete({ where: { id: account.id } });
     res.json({ message: 'Kas berhasil dihapus' });
   } catch (error) {
+    logError('financeController.deleteAccount', error);
     res.status(500).json({ message: 'Gagal menghapus kas' });
   }
 };
@@ -393,6 +399,7 @@ export const getTransactions = async (req: Request, res: Response): Promise<void
       },
     ]);
   } catch (error) {
+    logError('financeController.getTransactions', error);
     res.status(500).json({ message: 'Gagal mengambil transaksi' });
   }
 };
@@ -424,6 +431,7 @@ export const createTransaction = async (req: Request, res: Response): Promise<vo
     });
     res.status(201).json(serializeTransaction(transaction));
   } catch (error) {
+    logError('financeController.createTransaction', error);
     res.status(500).json({ message: 'Gagal mencatat transaksi' });
   }
 };
@@ -459,6 +467,7 @@ export const updateTransaction = async (req: Request, res: Response): Promise<vo
     });
     res.json(serializeTransaction(updated));
   } catch (error) {
+    logError('financeController.updateTransaction', error);
     res.status(500).json({ message: 'Gagal mengubah transaksi' });
   }
 };
@@ -471,6 +480,7 @@ export const deleteTransaction = async (req: Request, res: Response): Promise<vo
     await prisma.transaction.delete({ where: { id: transaction.id } });
     res.json({ message: 'Transaksi dihapus' });
   } catch (error) {
+    logError('financeController.deleteTransaction', error);
     res.status(500).json({ message: 'Gagal menghapus transaksi' });
   }
 };
@@ -493,6 +503,7 @@ export const createDuesPlan = async (req: Request, res: Response): Promise<void>
     });
     res.status(201).json({ ...plan, amount: toNumber(plan.amount) });
   } catch (error) {
+    logError('financeController.createDuesPlan', error);
     res.status(500).json({ message: 'Gagal membuat iuran' });
   }
 };
@@ -529,6 +540,7 @@ export const updateDuesPlan = async (req: Request, res: Response): Promise<void>
     });
     res.json({ ...plan, amount: toNumber(plan.amount) });
   } catch (error) {
+    logError('financeController.updateDuesPlan', error);
     res.status(500).json({ message: 'Gagal mengubah iuran' });
   }
 };
@@ -542,6 +554,7 @@ export const deleteDuesPlan = async (req: Request, res: Response): Promise<void>
     await prisma.duesPlan.delete({ where: { id: loaded.plan.id } });
     res.json({ message: 'Iuran dihapus, transaksi pembayaran tetap tersimpan di kas' });
   } catch (error) {
+    logError('financeController.deleteDuesPlan', error);
     res.status(500).json({ message: 'Gagal menghapus iuran' });
   }
 };
@@ -617,6 +630,7 @@ export const getDuesStatus = async (req: Request, res: Response): Promise<void> 
       canManage: canManageAccount(account, req.user!),
     });
   } catch (error) {
+    logError('financeController.getDuesStatus', error);
     res.status(500).json({ message: 'Gagal mengambil status iuran' });
   }
 };
@@ -669,6 +683,7 @@ export const payDues = async (req: Request, res: Response): Promise<void> => {
     });
     res.status(201).json(serializeTransaction(transaction));
   } catch (error) {
+    logError('financeController.payDues', error);
     res.status(500).json({ message: 'Gagal mencatat pembayaran iuran' });
   }
 };
@@ -691,6 +706,7 @@ export const cancelDuesPayment = async (req: Request, res: Response): Promise<vo
     });
     res.json({ message: 'Pembayaran dibatalkan', deleted: result.count });
   } catch (error) {
+    logError('financeController.cancelDuesPayment', error);
     res.status(500).json({ message: 'Gagal membatalkan pembayaran' });
   }
 };

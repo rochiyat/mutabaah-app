@@ -3,6 +3,7 @@ import { prisma } from '../utils/prisma'
 import { CreateRecordDTO, UpdateRecordDTO } from '../types'
 import { canRecordActivity } from '../utils/activityAccess'
 import { dateKeyToDb, isDateKey, isNotFutureDate, localDateKey } from '../utils/date'
+import { logError } from '../utils/logger'
 
 export const getRecords = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -37,6 +38,7 @@ export const getRecords = async (req: Request, res: Response): Promise<void> => 
 
     res.json(records)
   } catch (error) {
+    logError('recordController.getRecords', error)
     res.status(500).json({ message: 'Gagal mengambil catatan' })
   }
 }
@@ -83,6 +85,7 @@ export const createRecord = async (req: Request, res: Response): Promise<void> =
 
     res.status(201).json(record)
   } catch (error: any) {
+    logError('recordController.createRecord', error)
     if (error.code === 'P2002') {
       res.status(400).json({ message: 'Catatan untuk tanggal ini sudah ada' })
     } else {
@@ -120,6 +123,7 @@ export const updateRecord = async (req: Request, res: Response): Promise<void> =
 
     res.json(updated)
   } catch (error) {
+    logError('recordController.updateRecord', error)
     res.status(500).json({ message: 'Gagal mengupdate catatan' })
   }
 }
@@ -142,6 +146,7 @@ export const deleteRecord = async (req: Request, res: Response): Promise<void> =
     await prisma.record.delete({ where: { id: parseInt(id) } })
     res.json({ message: 'Catatan berhasil dihapus' })
   } catch (error) {
+    logError('recordController.deleteRecord', error)
     res.status(500).json({ message: 'Gagal menghapus catatan' })
   }
 }

@@ -1727,3 +1727,318 @@ label.checkbox {
   border: 1px solid var(--border);
   border-top-width: 4px;
 }
+
+/* ===== Profil, log aktivitas, catatan murabbi, template, kalender, PWA ===== */
+a.user-chip {
+  color: inherit;
+  text-decoration: none;
+}
+
+a.user-chip:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.audit-detail summary {
+  cursor: pointer;
+}
+
+.audit-detail code {
+  font-size: 0.8rem;
+  word-break: break-all;
+}
+
+.audit-detail pre {
+  margin-top: 0.5rem;
+  padding: 0.6rem;
+  max-width: 420px;
+  max-height: 240px;
+  overflow: auto;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+}
+
+.pagination {
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.note-list,
+.upcoming-list,
+.template-item-list {
+  list-style: none;
+}
+
+.note-item {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--primary);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  margin-bottom: 0.75rem;
+}
+
+.note-item.note-evaluasi {
+  border-left-color: var(--warning);
+}
+
+.note-item.note-apresiasi {
+  border-left-color: var(--gold);
+}
+
+.note-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.note-meta .badge {
+  margin-left: 0;
+}
+
+.note-item .actions {
+  margin-top: 0.5rem;
+}
+
+.template-picker {
+  background: var(--primary-tint);
+  border: 1px dashed var(--primary-soft);
+  border-radius: var(--radius);
+  padding: 0.25rem 1rem 0.75rem;
+}
+
+.template-items input[type='text'],
+.template-items input:not([type]),
+.template-items input[type='number'] {
+  width: 100%;
+  min-width: 80px;
+  padding: 0.4rem;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+}
+
+.template-item-list {
+  margin: 0.5rem 0;
+  color: var(--text-soft);
+  font-size: 0.92rem;
+}
+
+.template-item-list li {
+  padding: 0.15rem 0;
+}
+
+/* Kalender Hijriah */
+.calendar-title {
+  margin-bottom: 0.75rem;
+  font-size: 1.05rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+  margin-bottom: 0.75rem;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--muted);
+  padding: 0.25rem 0;
+}
+
+.calendar-weekday.friday {
+  color: var(--primary);
+}
+
+.calendar-cell {
+  position: relative;
+  min-height: 92px;
+  padding: 0.35rem 0.4rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.calendar-cell.outside {
+  opacity: 0.45;
+}
+
+.calendar-cell.today {
+  border: 2px solid var(--primary);
+  background: var(--primary-tint);
+}
+
+.calendar-cell.has-feast {
+  background: var(--gold-soft);
+}
+
+.calendar-dates {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.calendar-dates .gregorian {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.calendar-dates .hijri {
+  font-family: var(--font-arabic);
+  font-size: 0.85rem;
+  color: var(--gold-strong);
+  text-align: right;
+  line-height: 1.1;
+}
+
+.calendar-events {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-top: 0.25rem;
+}
+
+.calendar-event {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 0.05rem 0.35rem;
+  border-radius: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 0.25rem;
+}
+
+.calendar-event.hari-besar {
+  background: var(--gold);
+  color: #fff;
+}
+
+.calendar-event.puasa-sunnah {
+  background: var(--primary-soft);
+  color: var(--primary-strong);
+}
+
+.calendar-event.haram-puasa {
+  background: var(--danger-soft);
+  color: var(--danger-strong);
+}
+
+.calendar-filled {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--success);
+}
+
+.calendar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.calendar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.calendar-legend i {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  padding: 0;
+  margin: 0;
+}
+
+.calendar-legend i.calendar-filled {
+  position: static;
+  width: 8px;
+  height: 8px;
+}
+
+.upcoming-list li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.upcoming-date {
+  font-weight: 600;
+}
+
+/* Tombol pasang aplikasi (PWA) */
+.install-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  background: var(--gold-soft);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: var(--text);
+}
+
+@media (max-width: 768px) {
+  .calendar-grid {
+    gap: 2px;
+  }
+
+  .calendar-cell {
+    min-height: 64px;
+    padding: 0.2rem 0.25rem;
+  }
+
+  .calendar-event {
+    font-size: 0;
+    width: 8px;
+    height: 8px;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .calendar-events {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .calendar-dates {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .calendar-dates .hijri {
+    font-size: 0.75rem;
+  }
+
+  .upcoming-list .calendar-event {
+    font-size: 0.68rem;
+    width: auto;
+    height: auto;
+    padding: 0.05rem 0.35rem;
+    border-radius: 6px;
+  }
+}
