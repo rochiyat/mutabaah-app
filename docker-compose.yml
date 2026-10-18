@@ -2,7 +2,7 @@ version: "3.8"
 
 # ==============================================================================
 # Mutabaah App - Single VPS Docker Compose Configuration
-# Domain: rochiyat.web.id
+# Domain: mutabaah.rochiyat.web.id
 # Architecture: Connects to shared Caddy ingress via bitcircle_internal_net
 # Database: Managed MySQL on Aiven (External Cloud)
 # ==============================================================================
