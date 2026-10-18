@@ -325,7 +325,6 @@ a {
   flex: 1;
   min-width: 0;
   padding: 2rem;
-  max-width: 1200px;
   animation: rise 0.25s ease-out;
 }
 
