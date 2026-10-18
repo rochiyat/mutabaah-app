@@ -34,7 +34,7 @@ export const KajianDetailPage: React.FC = () => {
     load()
   }, [load])
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
   if (!kajian) return <div className="error">{error || 'Kajian tidak ditemukan'}</div>
 
   const handleUpdate = async (data: KajianInput) => {

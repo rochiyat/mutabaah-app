@@ -39,7 +39,7 @@ export const ActivityList: React.FC = () => {
     fetchActivities()
   }
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
 
   return (
     <div className="activity-list">

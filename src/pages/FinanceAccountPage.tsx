@@ -39,7 +39,7 @@ export const FinanceAccountPage: React.FC = () => {
       .catch(() => undefined)
   }, [load])
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
   if (!account) return <div className="error">{error || 'Kas tidak ditemukan'}</div>
 
   const handleUpdate = async (data: FinanceAccountInput) => {

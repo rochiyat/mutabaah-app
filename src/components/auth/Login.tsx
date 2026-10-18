@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { Icon } from '@/components/ui/Icon'
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -28,7 +29,13 @@ export const Login: React.FC = () => {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h1>Mutaba'ah App</h1>
+        <div className="auth-head">
+          <span className="brand-mark brand-mark-lg">
+            <Icon name="moon" size={28} />
+          </span>
+          <h1>Mutaba'ah</h1>
+          <p className="muted">Assalamu'alaikum! Silakan masuk untuk melanjutkan amal harian.</p>
+        </div>
         <form onSubmit={handleSubmit}>
           <div>
             <label>Email</label>
@@ -49,11 +56,11 @@ export const Login: React.FC = () => {
             />
           </div>
           {error && <div className="error">{error}</div>}
-          <button type="submit" disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Login'}
+          <button type="submit" className="btn-primary btn-block" disabled={isLoading}>
+            {isLoading ? 'Memproses...' : 'Masuk'}
           </button>
         </form>
-        <p>
+        <p className="auth-switch">
           Belum punya akun? <Link to="/register">Daftar di sini</Link>
         </p>
       </div>

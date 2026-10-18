@@ -70,7 +70,7 @@ export const MeetingDetailPage: React.FC = () => {
     ]
   }, [meeting, extraUsers])
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
   if (!meeting) return <div className="error">{error || 'Pertemuan tidak ditemukan'}</div>
 
   const backLink = meeting.group
