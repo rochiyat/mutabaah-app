@@ -2,7 +2,7 @@ import { Request, Response } from 'express'
 import { prisma } from '../utils/prisma'
 import { CreateRecordDTO, UpdateRecordDTO } from '../types'
 import { canRecordActivity } from '../utils/activityAccess'
-import { dateKeyToDb, isDateKey, localDateKey } from '../utils/date'
+import { dateKeyToDb, isDateKey, isNotFutureDate, localDateKey } from '../utils/date'
 
 export const getRecords = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -52,6 +52,11 @@ export const createRecord = async (req: Request, res: Response): Promise<void> =
 
     if (date !== undefined && !isDateKey(date)) {
       res.status(400).json({ message: 'Format tanggal harus yyyy-MM-dd' })
+      return
+    }
+
+    if (date !== undefined && !isNotFutureDate(date)) {
+      res.status(400).json({ message: 'Laporan tidak bisa diisi untuk tanggal yang akan datang' })
       return
     }
 

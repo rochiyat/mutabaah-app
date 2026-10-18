@@ -74,6 +74,14 @@ export const todayKey = (): string => {
   return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
 }
 
+// Geser tanggal 'yyyy-MM-dd' sebanyak n hari (negatif = mundur)
+export const shiftDateKey = (key: string, days: number): string => {
+  const [y, m, d] = key.split('-').map(Number)
+  const date = new Date(y, m - 1, d + days)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+}
+
 export const isFinanceManagerRole = (roles?: Role[]): boolean =>
   isManagerRole(roles) || hasRole(roles, 'bendahara')
 

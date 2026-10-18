@@ -30,3 +30,12 @@ export const eachDateKey = (start: string, end: string): string[] => {
 }
 
 export const minDateKey = (a: string, b: string): string => (a < b ? a : b)
+
+// Laporan susulan boleh untuk tanggal berapa pun yang sudah lewat, tapi tidak untuk tanggal ke depan.
+// Toleransi 1 hari karena zona waktu server (mis. UTC di Docker) bisa tertinggal
+// dari zona waktu pengguna (WIB/WITA/WIT).
+export const isNotFutureDate = (key: string): boolean => {
+  const latest = parseDateKey(localDateKey())
+  latest.setDate(latest.getDate() + 1)
+  return key <= localDateKey(latest)
+}
