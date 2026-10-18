@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '@/hooks/useAuth'
+import { Icon } from '@/components/ui/Icon'
 
 export const Register: React.FC = () => {
   const [email, setEmail] = useState('')
@@ -29,7 +30,13 @@ export const Register: React.FC = () => {
   return (
     <div className="register-container">
       <div className="register-card">
-        <h1>Daftar Mutaba'ah App</h1>
+        <div className="auth-head">
+          <span className="brand-mark brand-mark-lg">
+            <Icon name="moon" size={28} />
+          </span>
+          <h1>Daftar Akun</h1>
+          <p className="muted">Ahlan wa sahlan! Buat akun dan mulai catat amal harian.</p>
+        </div>
         <form onSubmit={handleSubmit}>
           <div>
             <label>Nama</label>
@@ -59,11 +66,11 @@ export const Register: React.FC = () => {
             />
           </div>
           {error && <div className="error">{error}</div>}
-          <button type="submit" disabled={isLoading}>
-            {isLoading ? 'Loading...' : 'Daftar'}
+          <button type="submit" className="btn-primary btn-block" disabled={isLoading}>
+            {isLoading ? 'Memproses...' : 'Daftar'}
           </button>
         </form>
-        <p>
+        <p className="auth-switch">
           Sudah punya akun? <Link to="/login">Login di sini</Link>
         </p>
       </div>

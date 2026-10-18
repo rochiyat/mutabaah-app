@@ -37,7 +37,7 @@ export const FinancePage: React.FC = () => {
     navigate(`/keuangan/${response.data.id}`)
   }
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
 
   const lembaga = accounts.filter((a) => !a.group)
   const halaqoh = accounts.filter((a) => a.group)

@@ -69,7 +69,7 @@ export const HalaqohDetailPage: React.FC = () => {
     }
   }
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
   if (!group) return <div className="error">{error || 'Halaqoh tidak ditemukan'}</div>
 
   const isOwner = group.adminId === user?.id || isManagerRole(user?.roles)

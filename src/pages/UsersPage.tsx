@@ -100,7 +100,7 @@ export const UsersPage: React.FC = () => {
       )}
 
       {isLoading ? (
-        <div>Loading...</div>
+        <div className="loading">Memuat...</div>
       ) : (
         <div className="table-wrap">
           <table className="table">

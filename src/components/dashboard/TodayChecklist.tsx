@@ -46,11 +46,14 @@ export const TodayChecklist: React.FC = () => {
     }
   };
 
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) return <div className="loading">Memuat checklist...</div>;
 
   return (
     <div className="today-checklist">
       <h2>Checklist Hari Ini</h2>
+      {activities.length === 0 && (
+        <p className="muted">Belum ada aktivitas aktif. Tambahkan dulu di menu Aktivitas, yuk.</p>
+      )}
       {activities.map((activity) => {
         const today = new Date().toISOString().split('T')[0];
         const todayRecord = records.find(

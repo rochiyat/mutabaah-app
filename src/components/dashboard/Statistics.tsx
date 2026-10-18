@@ -26,7 +26,7 @@ export const Statistics: React.FC = () => {
     fetchStats()
   }, [])
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
 
   return (
     <div className="statistics">

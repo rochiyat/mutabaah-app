@@ -170,7 +170,7 @@ export const ReportsPage: React.FC = () => {
       {error && <div className="error">{error}</div>}
 
       {isLoading ? (
-        <div>Loading...</div>
+        <div className="loading">Memuat...</div>
       ) : !report || report.tab !== tab ? (
         tab !== 'saya' && !effectiveId && (
           <p className="muted">Belum ada {tab === 'kajian' ? 'kajian' : 'halaqoh'} yang Anda kelola.</p>

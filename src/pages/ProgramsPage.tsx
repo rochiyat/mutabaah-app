@@ -49,7 +49,7 @@ export const ProgramsPage: React.FC = () => {
     navigate(`/program/${response.data.id}`)
   }
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
 
   const visible = statusFilter ? programs.filter((p) => p.status === statusFilter) : programs
 

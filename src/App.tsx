@@ -44,7 +44,7 @@ const ProtectedRoute: React.FC<{
   const { user, isLoading } = context;
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="loading">Memuat...</div>;
   }
 
   if (!user) {

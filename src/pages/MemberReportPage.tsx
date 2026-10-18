@@ -65,7 +65,7 @@ export const MemberReportPage: React.FC = () => {
       </p>
 
       {error && <div className="error">{error}</div>}
-      {isLoading ? <div>Loading...</div> : report && <UserMutabaahView report={report} />}
+      {isLoading ? <div className="loading">Memuat...</div> : report && <UserMutabaahView report={report} />}
     </div>
   )
 }

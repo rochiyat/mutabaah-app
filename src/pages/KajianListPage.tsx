@@ -27,7 +27,7 @@ export const KajianListPage: React.FC = () => {
     navigate(`/kajian/${response.data.id}`)
   }
 
-  if (isLoading) return <div>Loading...</div>
+  if (isLoading) return <div className="loading">Memuat...</div>
 
   return (
     <div className="activity-list">
