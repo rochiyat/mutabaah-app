@@ -29,11 +29,11 @@ export const Navbar: React.FC = () => {
               <span className="avatar">{user.name.charAt(0).toUpperCase()}</span>
               <span className="user-name">{user.name}</span>
             </Link>
-            <Link to="/ganti-password" className="nav-link" title="Ganti Password">
+            <Link to="/ganti-password" className="nav-link desktop-only" title="Ganti Password">
               <Icon name="key" size={18} />
               <span className="nav-label">Ganti Password</span>
             </Link>
-            <button onClick={handleLogout} className="btn-logout" title="Logout">
+            <button onClick={handleLogout} className="btn-logout desktop-only" title="Logout">
               <Icon name="logout" size={18} />
               <span className="nav-label">Logout</span>
             </button>

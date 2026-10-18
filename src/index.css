@@ -1531,47 +1531,10 @@ label.checkbox {
     flex-direction: column;
   }
 
-  .sidebar {
-    position: sticky;
-    top: 54px;
-    z-index: 10;
-    height: auto;
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--border);
-    padding: 0.6rem 0.75rem;
-    overflow: visible;
-  }
-
-  .sidebar ul {
-    flex-direction: row;
-    gap: 0.4rem;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .sidebar ul::-webkit-scrollbar {
-    display: none;
-  }
-
-  .sidebar a {
-    padding: 0.5rem 0.85rem;
-    border-radius: 999px;
-    white-space: nowrap;
-    font-size: 0.875rem;
-    background: var(--surface-2);
-    border: 1px solid var(--border);
-  }
-
-  .sidebar a.active {
-    background: var(--primary);
-    border-color: var(--primary);
-    color: white;
-    box-shadow: none;
-  }
-
-  .sidebar-footer {
-    display: none;
+  /* Di HP sidebar diganti menu bawah (MobileNav) */
+  .sidebar,
+  .desktop-only {
+    display: none !important;
   }
 
   .main-content {
@@ -2040,5 +2003,220 @@ a.user-chip:hover {
     height: auto;
     padding: 0.05rem 0.35rem;
     border-radius: 6px;
+  }
+}
+
+/* ===== Menu bawah HP (MobileNav) ===== */
+.mobile-nav,
+.mobile-sheet-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    padding-top: calc(0.65rem + env(safe-area-inset-top));
+  }
+
+  /* Ruang agar konten tidak tertutup menu bawah */
+  .with-mobile-nav .main-content {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 16px rgba(15, 63, 58, 0.08);
+    padding: 0.35rem 0.25rem calc(0.35rem + env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav a,
+  .mobile-nav button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.15rem;
+    min-height: 52px;
+    padding: 0.25rem 0;
+    border: none;
+    border-radius: 12px;
+    background: none;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-nav span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-nav .icon {
+    padding: 0.2rem 0.9rem;
+    box-sizing: content-box;
+    border-radius: 999px;
+    transition: background 0.15s;
+  }
+
+  .mobile-nav .active {
+    color: var(--primary-strong);
+  }
+
+  .mobile-nav .active .icon {
+    background: var(--primary-soft);
+  }
+
+  .mobile-sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 40;
+    background: rgba(11, 63, 58, 0.35);
+    animation: fade-in 0.15s ease-out;
+  }
+
+  .mobile-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 85vh;
+    overflow-y: auto;
+    background: var(--surface);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    padding: 0.5rem 1rem calc(1rem + env(safe-area-inset-bottom));
+    box-shadow: var(--shadow-lg);
+    animation: sheet-up 0.2s ease-out;
+  }
+
+  .mobile-sheet-handle {
+    width: 40px;
+    height: 4px;
+    margin: 0.25rem auto 0.75rem;
+    border-radius: 999px;
+    background: var(--border-strong);
+  }
+
+  .mobile-sheet-profile {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: var(--radius);
+    background: var(--primary-tint);
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .mobile-sheet-profile > span:nth-child(2) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .mobile-sheet-profile .avatar {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .mobile-sheet-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .mobile-sheet-grid a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 76px;
+    padding: 0.6rem 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface-2);
+    color: var(--text-soft);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    line-height: 1.2;
+  }
+
+  .mobile-sheet-grid a.active {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--primary-strong);
+  }
+
+  .mobile-sheet-actions {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+    padding-top: 0.5rem;
+  }
+
+  .mobile-sheet-actions a,
+  .mobile-sheet-actions button {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 48px;
+    padding: 0 0.5rem;
+    border: none;
+    background: none;
+    color: var(--text);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .mobile-sheet-actions .danger {
+    color: var(--danger);
+  }
+}
+
+@media print {
+  .mobile-nav,
+  .mobile-sheet-backdrop {
+    display: none !important;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-sheet,
+  .mobile-sheet-backdrop {
+    animation: none;
   }
 }

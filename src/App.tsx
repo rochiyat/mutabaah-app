@@ -33,6 +33,7 @@ import { HijriCalendarPage } from '@/pages/HijriCalendarPage';
 import type { Role } from '@/types';
 import { Navbar } from '@/components/layout/Navbar';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { MobileNav } from '@/components/layout/MobileNav';
 
 const ProtectedRoute: React.FC<{
   children: React.ReactNode;
@@ -72,7 +73,7 @@ const AppContent: React.FC = () => {
   const isAuthenticated = context?.user !== null && !context?.isLoading;
 
   return (
-    <div className="app">
+    <div className={`app ${isAuthenticated ? 'with-mobile-nav' : ''}`}>
       {isAuthenticated && <Navbar />}
       <div className="app-body">
         {isAuthenticated && <Sidebar />}
@@ -244,6 +245,7 @@ const AppContent: React.FC = () => {
           </Routes>
         </main>
       </div>
+      {isAuthenticated && <MobileNav />}
     </div>
   );
 };
