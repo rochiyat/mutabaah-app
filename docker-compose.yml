@@ -1,0 +1,40 @@
+version: "3.8"
+
+# ==============================================================================
+# Mutabaah App - Single VPS Docker Compose Configuration
+# Domain: rochiyat.web.id
+# Architecture: Connects to shared Caddy ingress via bitcircle_internal_net
+# Database: Managed MySQL on Aiven (External Cloud)
+# ==============================================================================
+
+services:
+  mutabaah-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mutabaah-app:latest
+    container_name: mutabaah-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=${DATABASE_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - TRUST_PROXY=1
+      - SEED_SUPERADMIN_EMAIL=${SEED_SUPERADMIN_EMAIL:-superadmin@mutabaah.com}
+      - SEED_SUPERADMIN_PASSWORD=${SEED_SUPERADMIN_PASSWORD}
+    networks:
+      - bitcircle_internal_net
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "20m"
+        max-file: "3"
+
+networks:
+  bitcircle_internal_net:
+    external: true

@@ -3,6 +3,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch server/index.ts",
+    "start": "tsx server/index.ts",
     "build": "tsc && vite build",
     "build:server": "tsc -p tsconfig.node.json",
     "preview": "vite preview",
